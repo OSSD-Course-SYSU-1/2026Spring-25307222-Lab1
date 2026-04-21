@@ -1,0 +1,1027 @@
+{
+  "version": 1,
+  "ohos-module-default": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build",
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\src\\main",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\cache\\default\\default@CompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\cache\\default\\default@CompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "strictMode": {
+          "caseSensitiveCheck": true,
+          "useNormalizedOHMUrl": true
+        },
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        },
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        }
+      },
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-module-base": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build",
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\src\\main",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\cache\\default\\default@HarCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\cache\\default\\default@HarCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "strictMode": {
+          "caseSensitiveCheck": true,
+          "useNormalizedOHMUrl": true
+        },
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        },
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        }
+      },
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              },
+              "consumerFiles": [
+                "./consumer-rules.txt"
+              ]
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-module-home": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build",
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\src\\main",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\cache\\default\\default@HarCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\cache\\default\\default@HarCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "strictMode": {
+          "caseSensitiveCheck": true,
+          "useNormalizedOHMUrl": true
+        },
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        },
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        }
+      },
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              },
+              "consumerFiles": [
+                "./consumer-rules.txt"
+              ]
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-module-portrait": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build",
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\src\\main",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\cache\\default\\default@HarCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\cache\\default\\default@HarCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "strictMode": {
+          "caseSensitiveCheck": true,
+          "useNormalizedOHMUrl": true
+        },
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        },
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        }
+      },
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              },
+              "consumerFiles": [
+                "./consumer-rules.txt"
+              ]
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-module-landscape": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build",
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\src\\main",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\cache\\default\\default@HarCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\cache\\default\\default@HarCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "strictMode": {
+          "caseSensitiveCheck": true,
+          "useNormalizedOHMUrl": true
+        },
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        },
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        }
+      },
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              },
+              "consumerFiles": [
+                "./consumer-rules.txt"
+              ]
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-module-photos": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build",
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\src\\main",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\cache\\default\\default@HarCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\cache\\default\\default@HarCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "strictMode": {
+          "caseSensitiveCheck": true,
+          "useNormalizedOHMUrl": true
+        },
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        },
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        }
+      },
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              },
+              "consumerFiles": [
+                "./consumer-rules.txt"
+              ]
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-module-stock": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build",
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\src\\main",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\cache\\default\\default@HarCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\cache\\default\\default@HarCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "strictMode": {
+          "caseSensitiveCheck": true,
+          "useNormalizedOHMUrl": true
+        },
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        },
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        }
+      },
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              },
+              "consumerFiles": [
+                "./consumer-rules.txt"
+              ]
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-module-video": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build",
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\src\\main",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\cache\\default\\default@HarCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\cache\\default\\default@HarCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "strictMode": {
+          "caseSensitiveCheck": true,
+          "useNormalizedOHMUrl": true
+        },
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        },
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {
+        "resOptions": {
+          "copyCodeResource": {
+            "enable": false
+          }
+        }
+      },
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              },
+              "consumerFiles": [
+                "./consumer-rules.txt"
+              ]
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-project": {
+    "SELECT_PRODUCT_NAME": "default",
+    "MODULE_BUILD_DIR": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\build",
+    "BUNDLE_NAME": "com.example.windoworientation",
+    "VERSION_CODE": 1000000,
+    "VERSION_NAME": "1.0.0",
+    "BUILD_PATH": {
+      "OUTPUT_PATH": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\build\\outputs\\default"
+    },
+    "MODULES": [
+      {
+        "name": "default",
+        "srcPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\products\\default",
+        "targets": [
+          {
+            "name": "default",
+            "applyToProducts": [
+              "default"
+            ]
+          }
+        ],
+        "belongProjectPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+      },
+      {
+        "name": "base",
+        "srcPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\commons\\base",
+        "belongProjectPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+      },
+      {
+        "name": "home",
+        "srcPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\home",
+        "belongProjectPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+      },
+      {
+        "name": "portrait",
+        "srcPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\portrait",
+        "belongProjectPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+      },
+      {
+        "name": "landscape",
+        "srcPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\landscape",
+        "belongProjectPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+      },
+      {
+        "name": "photos",
+        "srcPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\photos",
+        "belongProjectPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+      },
+      {
+        "name": "stock",
+        "srcPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\stock",
+        "belongProjectPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+      },
+      {
+        "name": "video",
+        "srcPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master\\features\\video",
+        "belongProjectPath": "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+      }
+    ],
+    "PROFILE_OPT": {
+      "app": {
+        "signingConfigs": [],
+        "products": [
+          {
+            "name": "default",
+            "signingConfig": "default",
+            "targetSdkVersion": "6.0.2(22)",
+            "compatibleSdkVersion": "6.0.2(22)",
+            "runtimeOS": "HarmonyOS",
+            "buildOption": {
+              "strictMode": {
+                "caseSensitiveCheck": true,
+                "useNormalizedOHMUrl": true
+              }
+            }
+          }
+        ],
+        "buildModeSet": [
+          {
+            "name": "debug"
+          },
+          {
+            "name": "release"
+          }
+        ]
+      },
+      "modules": [
+        {
+          "name": "default",
+          "srcPath": "./products/default",
+          "targets": [
+            {
+              "name": "default",
+              "applyToProducts": [
+                "default"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "base",
+          "srcPath": "./commons/base"
+        },
+        {
+          "name": "home",
+          "srcPath": "./features/home"
+        },
+        {
+          "name": "portrait",
+          "srcPath": "./features/portrait"
+        },
+        {
+          "name": "landscape",
+          "srcPath": "./features/landscape"
+        },
+        {
+          "name": "photos",
+          "srcPath": "./features/photos"
+        },
+        {
+          "name": "stock",
+          "srcPath": "./features/stock"
+        },
+        {
+          "name": "video",
+          "srcPath": "./features/video"
+        }
+      ]
+    },
+    "CONFIG_PROPERTIES": {
+      "enableSignTask": true,
+      "skipNativeIncremental": false,
+      "hvigor.keepDependency": true
+    },
+    "OVERALL_PROJECT_PATHS": [
+      "D:\\study\\SYSU\\Fr.S2\\OSSDTech\\WindowOrientation-master"
+    ],
+    "BUILD_CACHE_DIR": ""
+  }
+}

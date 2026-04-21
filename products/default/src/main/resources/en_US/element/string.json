@@ -1,0 +1,40 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "WindowOrientation"
+    },
+    {
+      "name": "homepage",
+      "value": "Home Page"
+    },
+    {
+      "name": "landscape_mode_game",
+      "value": "Landscape Mode Game"
+    },
+    {
+      "name": "portrait_mode_game",
+      "value": "Portrait Mode Game"
+    },
+    {
+      "name": "photos",
+      "value": "Photos"
+    },
+    {
+      "name": "stock",
+      "value": "Stock Detail"
+    },
+    {
+      "name": "video",
+      "value": "Video Detail"
+    }
+  ]
+}

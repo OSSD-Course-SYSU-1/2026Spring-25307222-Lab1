@@ -1,0 +1,40 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "WindowOrientation"
+    },
+    {
+      "name": "homepage",
+      "value": "应用首页"
+    },
+    {
+      "name": "landscape_mode_game",
+      "value": "横屏游戏"
+    },
+    {
+      "name": "portrait_mode_game",
+      "value": "竖屏游戏"
+    },
+    {
+      "name": "photos",
+      "value": "图库"
+    },
+    {
+      "name": "stock",
+      "value": "股票详情页"
+    },
+    {
+      "name": "video",
+      "value": "视频详情页"
+    }
+  ]
+}

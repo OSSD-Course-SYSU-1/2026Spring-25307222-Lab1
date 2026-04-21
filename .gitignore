@@ -1,0 +1,26 @@
+# build outputs
+build/
+out/
+
+# dependencies
+node_modules/
+
+# logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+
+# Gradle
+.gradle/
+
+# local config
+.local/
+
+# DevEco cache
+hvigor/
