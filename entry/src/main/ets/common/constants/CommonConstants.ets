@@ -25,7 +25,7 @@ export class CommonConstants {
   /**
    * Operator Collection.
    */
-  static readonly OPERATORS: string = '+-×÷';
+  static readonly OPERATORS: string = '+-×÷\u221A';
 
   /**
    * Operators with high precedence.
@@ -51,6 +51,11 @@ export class CommonConstants {
    * Division.
    */
   static readonly DIV: string = '÷';
+
+  /**
+   * Square root.
+   */
+  static readonly SQRT: string = '\u221A';
 
   /**
    * Percent sign.
@@ -116,6 +121,7 @@ export enum Symbol {
   MIN = 'min',
   MUL = 'mul',
   DIV = 'div',
+  SQRT = 'sqrt',
   CLEAN = 'clean',
   DEL = 'del',
   EQU = 'equ'
@@ -125,6 +131,7 @@ export enum Symbol {
  * Operator Precedence Enumeration.
  */
 export enum Priority {
+  HIGHEST = 3,
   HIGH = 2,
   MEDIUM = 1,
   LOW = 0
@@ -137,5 +144,6 @@ export enum SymbolicEnumeration {
   ADD = '+',
   MIN = '-',
   MUL = '×',
-  DIV = '÷'
+  DIV = '÷',
+  SQRT = '\u221A'
 }

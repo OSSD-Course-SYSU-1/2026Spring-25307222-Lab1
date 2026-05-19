@@ -85,22 +85,20 @@ struct HomePage {
                   }
                   .width($r('app.float.key_width'))
                   .height(
-                    ((columnItemIndex === (keysModel.getPressKeys().length - 1)) &&
-                      (keyItemIndex === (columnItem.length - 1))) ?
+                    this.isTallEquals(columnItem, columnItemIndex, keyItemIndex) ?
                       $r('app.float.equals_height') : $r('app.float.key_height')
                   )
                   .borderWidth(1)
                   .borderColor($r('app.color.border_color'))
                   .borderRadius($r('app.float.border_radius'))
                   .backgroundColor(
-                    ((columnItemIndex === (keysModel.getPressKeys().length - 1)) &&
-                      (keyItemIndex === (columnItem.length - 1))) ?
+                    (keyItem.value === Symbol.EQU) ?
                       $r('app.color.equals_back_color') : Color.White
                   )
                   .alignItems(HorizontalAlign.Center)
                   .justifyContent(FlexAlign.Center)
                   .onClick(() => {
-                    if (keyItem.flag === 0) {
+                    if ((keyItem.flag === 0) || (keyItem.value === CommonConstants.SQRT)) {
                       this.inputSymbol(keyItem.value);
                     } else {
                       this.inputNumber(keyItem.value);
@@ -108,8 +106,7 @@ struct HomePage {
                   })
                 }
                 .layoutWeight(
-                  ((columnItemIndex === (keysModel.getPressKeys().length - 1)) &&
-                    (keyItemIndex === (columnItem.length - 1))) ? CommonConstants.TWO : 1
+                  this.isTallEquals(columnItem, columnItemIndex, keyItemIndex) ? CommonConstants.TWO : 1
                 )
                 .width(CommonConstants.FULL_PERCENT)
                 .justifyContent(FlexAlign.Center)
@@ -135,6 +132,12 @@ struct HomePage {
     }
     .height(CommonConstants.FULL_PERCENT)
     .backgroundColor($r('app.color.column_back_color'))
+  }
+
+  isTallEquals(columnItem: Array<PressKeysBean>, columnItemIndex?: number, keyItemIndex?: number) {
+    return (columnItem.length < 5) &&
+      (columnItemIndex === (keysModel.getPressKeys().length - 1)) &&
+      (keyItemIndex === (columnItem.length - 1));
   }
 
 
@@ -170,6 +173,9 @@ struct HomePage {
           this.expressions.push(this.inputValue);
         })
         break;
+      case CommonConstants.SQRT:
+        this.inputSqrt(len);
+        break;
       default:
         this.inputOperators(len, value);
         break;
@@ -194,13 +200,13 @@ struct HomePage {
     }
     if (!last) {
       this.expressions.push(value);
+    } else if (last === CommonConstants.SQRT) {
+      this.expressions.push(value);
     } else if (!secondLast) {
       this.expressions[len - 1] += value;
-    }
-    if (secondLast && CalculateUtil.isSymbol(secondLast)) {
+    } else if (secondLast && CalculateUtil.isSymbol(secondLast)) {
       this.expressions[len -1] += value;
-    }
-    if (secondLast && !CalculateUtil.isSymbol(secondLast)) {
+    } else if (secondLast && !CalculateUtil.isSymbol(secondLast)) {
       this.expressions.push(value);
     }
     this.formatInputValue();
@@ -221,6 +227,9 @@ struct HomePage {
       return false;
     }
     if ((last === CommonConstants.MIN) && (value === CommonConstants.PERCENT_SIGN)) {
+      return false;
+    }
+    if ((last === CommonConstants.SQRT) && (value === CommonConstants.PERCENT_SIGN)) {
       return false;
     }
     if (last.endsWith(CommonConstants.PERCENT_SIGN)) {
@@ -302,6 +311,23 @@ struct HomePage {
   }
 
   /**
+   * Triggered when input is square root.
+   *
+   * @param len Expression Length.
+   */
+  inputSqrt(len: number) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!last || CalculateUtil.isSymbol(last)) {
+      if (last !== CommonConstants.SQRT) {
+        this.expressions.push(CommonConstants.SQRT);
+      }
+      return;
+    }
+    this.expressions.push(CommonConstants.MUL);
+    this.expressions.push(CommonConstants.SQRT);
+  }
+
+  /**
    * Get Operator.
    *
    * @param value.
@@ -324,6 +350,9 @@ struct HomePage {
         break;
       case Symbol.DIV:
         symbol = CommonConstants.DIV;
+        break;
+      case Symbol.SQRT:
+        symbol = CommonConstants.SQRT;
         break;
       default:
         break;

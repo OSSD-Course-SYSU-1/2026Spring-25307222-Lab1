@@ -50,6 +50,9 @@ class CalculateUtil {
       case SymbolicEnumeration.DIV:
         result = Priority.HIGH;
         break;
+      case SymbolicEnumeration.SQRT:
+        result = Priority.HIGHEST;
+        break;
       default:
         result = Priority.LOW;
         break;
@@ -137,6 +140,12 @@ class CalculateUtil {
       if (current !== undefined) {
         if (!this.isSymbol(current)) {
           outputStack.push(current);
+        } else if (current === CommonConstants.SQRT) {
+          let value: string | undefined = outputStack.pop();
+          if (value !== undefined) {
+            let calResultValue: string = this.sqrt(value);
+            outputStack.push(calResultValue);
+          }
         } else {
           let second: string | undefined = outputStack.pop();
           let first: string | undefined = outputStack.pop();
@@ -184,6 +193,23 @@ class CalculateUtil {
         break;
       default:
         break;
+    }
+    return this.numberToScientificNotation(result);
+  }
+
+  /**
+   * Square root operation.
+   *
+   * @param arg Number.
+   * @return Square root result.
+   */
+  sqrt(arg: string): string {
+    if (CheckEmptyUtil.isEmpty(arg)) {
+      return 'NaN';
+    }
+    let result = Math.sqrt(Number(arg));
+    if (Number.isNaN(result)) {
+      return 'NaN';
     }
     return this.numberToScientificNotation(result);
   }
