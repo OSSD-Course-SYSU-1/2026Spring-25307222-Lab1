@@ -1,0 +1,9 @@
+# HarmonyOS / Hvigor generated files
+.hvigor/
+entry/build/
+
+# IDE local files
+.idea/
+
+# Build artifacts
+*.hap

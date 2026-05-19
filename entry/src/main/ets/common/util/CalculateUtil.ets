@@ -30,6 +30,28 @@ class CalculateUtil {
     return (CommonConstants.OPERATORS.indexOf(value) !== -1);
   }
 
+  isBinarySymbol(value: string): boolean {
+    return value === CommonConstants.ADD || value === CommonConstants.MIN ||
+      value === CommonConstants.MUL || value === CommonConstants.DIV;
+  }
+
+  isPrefixSymbol(value: string): boolean {
+    return value === CommonConstants.SQRT;
+  }
+
+  isPostfixSymbol(value: string): boolean {
+    return value === CommonConstants.SQUARE || value === CommonConstants.CUBE ||
+      value === CommonConstants.FACTORIAL;
+  }
+
+  isLeftParenthesis(value: string): boolean {
+    return value === CommonConstants.LEFT_PARENTHESIS;
+  }
+
+  isRightParenthesis(value: string): boolean {
+    return value === CommonConstants.RIGHT_PARENTHESIS;
+  }
+
   /**
    * Get Operator Precedence.
    *
@@ -51,6 +73,9 @@ class CalculateUtil {
         result = Priority.HIGH;
         break;
       case SymbolicEnumeration.SQRT:
+      case SymbolicEnumeration.SQUARE:
+      case SymbolicEnumeration.CUBE:
+      case SymbolicEnumeration.FACTORIAL:
         result = Priority.HIGHEST;
         break;
       default:
@@ -83,26 +108,46 @@ class CalculateUtil {
     if (CheckEmptyUtil.isEmpty(expressions)) {
       return 'NaN';
     }
-    let len = expressions.length;
+    expressions = this.normalizeExpression(expressions);
+    if (CheckEmptyUtil.isEmpty(expressions)) {
+      return 'NaN';
+    }
+    let last = expressions[expressions.length - 1];
+    if (this.isBinarySymbol(last)) {
+      expressions.pop();
+    } else if (this.isPrefixSymbol(last) || this.isLeftParenthesis(last)) {
+      return 'NaN';
+    }
     let outputStack: string[] = [];
     let outputQueue: string[] = [];
-    expressions.forEach((item: string, index: number) => {
-      // Handle % in the expression
-      if (item.indexOf(CommonConstants.PERCENT_SIGN) !== -1) {
-        expressions[index] = (this.mulOrDiv(item.slice(0, item.length - 1),
-          CommonConstants.ONE_HUNDRED, CommonConstants.DIV)).toString();
-      }
-      // Whether the last digit is an operator.
-      if ((index === len - 1) && this.isSymbol(item)) {
-        expressions.pop();
-      }
-    });
     while (expressions.length > 0) {
       let current: string | undefined = expressions.shift();
       if (current !== undefined) {
-        if (this.isSymbol(current)) {
-          // Processing addition, subtraction, multiplication and division.
-          while (outputStack.length > 0 && this.comparePriority(current, outputStack[outputStack.length - 1])) {
+        if (this.isLeftParenthesis(current)) {
+          outputStack.push(current);
+        } else if (this.isRightParenthesis(current)) {
+          let hasLeftParenthesis = false;
+          while (outputStack.length > 0) {
+            let popValue: string | undefined = outputStack.pop();
+            if (popValue !== undefined) {
+              if (this.isLeftParenthesis(popValue)) {
+                hasLeftParenthesis = true;
+                break;
+              }
+              outputQueue.push(popValue);
+            }
+          }
+          if (!hasLeftParenthesis) {
+            return 'NaN';
+          }
+        } else if (this.isPostfixSymbol(current)) {
+          outputQueue.push(current);
+        } else if (this.isPrefixSymbol(current)) {
+          outputStack.push(current);
+        } else if (this.isBinarySymbol(current)) {
+          while (outputStack.length > 0 &&
+            !this.isLeftParenthesis(outputStack[outputStack.length - 1]) &&
+            this.comparePriority(current, outputStack[outputStack.length - 1])) {
             let popValue: string | undefined = outputStack.pop();
             if (popValue !== undefined) {
               outputQueue.push(popValue);
@@ -118,10 +163,29 @@ class CalculateUtil {
     while (outputStack.length > 0) {
       let popValue: string | undefined = outputStack.pop();
       if (popValue !== undefined) {
+        if (this.isLeftParenthesis(popValue) || this.isRightParenthesis(popValue)) {
+          return 'NaN';
+        }
         outputQueue.push(popValue);
       }
     }
     return this.dealQueue(outputQueue);
+  }
+
+  normalizeExpression(expressions: Array<string>): Array<string> {
+    let result: Array<string> = [];
+    expressions.forEach((item: string) => {
+      if (item.indexOf(CommonConstants.PERCENT_SIGN) !== -1) {
+        let numberValue = item.slice(0, item.length - 1);
+        if (CheckEmptyUtil.isEmpty(numberValue)) {
+          return;
+        }
+        result.push((this.mulOrDiv(numberValue, CommonConstants.ONE_HUNDRED, CommonConstants.DIV)).toString());
+      } else {
+        result.push(item);
+      }
+    });
+    return result;
   }
 
   /**
@@ -140,17 +204,23 @@ class CalculateUtil {
       if (current !== undefined) {
         if (!this.isSymbol(current)) {
           outputStack.push(current);
-        } else if (current === CommonConstants.SQRT) {
+        } else if (this.isPrefixSymbol(current) || this.isPostfixSymbol(current)) {
           let value: string | undefined = outputStack.pop();
           if (value !== undefined) {
-            let calResultValue: string = this.sqrt(value);
+            let calResultValue: string = this.calUnaryResult(value, current);
+            if (calResultValue === 'NaN') {
+              return 'NaN';
+            }
             outputStack.push(calResultValue);
           }
-        } else {
+        } else if (this.isBinarySymbol(current)) {
           let second: string | undefined = outputStack.pop();
           let first: string | undefined = outputStack.pop();
           if (first !== undefined && second !== undefined) {
             let calResultValue: string = this.calResult(first, second, current)
+            if (calResultValue === 'NaN') {
+              return 'NaN';
+            }
             outputStack.push(calResultValue);
           }
         }
@@ -197,6 +267,24 @@ class CalculateUtil {
     return this.numberToScientificNotation(result);
   }
 
+  calUnaryResult(arg: string, symbol: string): string {
+    if (CheckEmptyUtil.isEmpty(arg) || CheckEmptyUtil.isEmpty(symbol)) {
+      return 'NaN';
+    }
+    switch (symbol) {
+      case SymbolicEnumeration.SQRT:
+        return this.sqrt(arg);
+      case SymbolicEnumeration.SQUARE:
+        return this.power(arg, CommonConstants.TWO);
+      case SymbolicEnumeration.CUBE:
+        return this.power(arg, 3);
+      case SymbolicEnumeration.FACTORIAL:
+        return this.factorial(arg);
+      default:
+        return 'NaN';
+    }
+  }
+
   /**
    * Square root operation.
    *
@@ -210,6 +298,28 @@ class CalculateUtil {
     let result = Math.sqrt(Number(arg));
     if (Number.isNaN(result)) {
       return 'NaN';
+    }
+    return this.numberToScientificNotation(result);
+  }
+
+  power(arg: string, exponent: number): string {
+    if (CheckEmptyUtil.isEmpty(arg)) {
+      return 'NaN';
+    }
+    return this.numberToScientificNotation(Math.pow(Number(arg), exponent));
+  }
+
+  factorial(arg: string): string {
+    if (CheckEmptyUtil.isEmpty(arg)) {
+      return 'NaN';
+    }
+    let value = Number(arg);
+    if (Number.isNaN(value) || value < 0 || Math.floor(value) !== value || value > 170) {
+      return 'NaN';
+    }
+    let result = 1;
+    for (let index = 2; index <= value; index++) {
+      result *= index;
     }
     return this.numberToScientificNotation(result);
   }
@@ -286,7 +396,7 @@ class CalculateUtil {
    * @param result Digital Results.
    */
   numberToScientificNotation(result: number) {
-    if (result === Number.NEGATIVE_INFINITY || result === Number.POSITIVE_INFINITY) {
+    if (Number.isNaN(result) || result === Number.NEGATIVE_INFINITY || result === Number.POSITIVE_INFINITY) {
       return 'NaN';
     }
     let resultStr = JSON.stringify(result);

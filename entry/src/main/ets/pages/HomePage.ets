@@ -98,7 +98,7 @@ struct HomePage {
                   .alignItems(HorizontalAlign.Center)
                   .justifyContent(FlexAlign.Center)
                   .onClick(() => {
-                    if ((keyItem.flag === 0) || (keyItem.value === CommonConstants.SQRT)) {
+                    if ((keyItem.flag === 0) || this.isTextSymbolKey(keyItem.value)) {
                       this.inputSymbol(keyItem.value);
                     } else {
                       this.inputNumber(keyItem.value);
@@ -140,6 +140,27 @@ struct HomePage {
       (keyItemIndex === (columnItem.length - 1));
   }
 
+  isTextSymbolKey(value: string): boolean {
+    return value === CommonConstants.SQRT || value === CommonConstants.LEFT_PARENTHESIS ||
+      value === CommonConstants.RIGHT_PARENTHESIS || value === CommonConstants.SQUARE ||
+      value === CommonConstants.CUBE || value === CommonConstants.FACTORIAL;
+  }
+
+  isBinaryOperator(value: string): boolean {
+    return value === CommonConstants.ADD || value === CommonConstants.MIN ||
+      value === CommonConstants.MUL || value === CommonConstants.DIV;
+  }
+
+  isPostfixOperator(value: string): boolean {
+    return value === CommonConstants.SQUARE || value === CommonConstants.CUBE ||
+      value === CommonConstants.FACTORIAL;
+  }
+
+  isValueEnd(value: string): boolean {
+    return !CheckEmptyUtil.isEmpty(value) && !this.isBinaryOperator(value) &&
+      value !== CommonConstants.SQRT && value !== CommonConstants.LEFT_PARENTHESIS;
+  }
+
 
   /**
    * Input Symbols.
@@ -176,6 +197,17 @@ struct HomePage {
       case CommonConstants.SQRT:
         this.inputSqrt(len);
         break;
+      case CommonConstants.LEFT_PARENTHESIS:
+        this.inputLeftParenthesis(len);
+        break;
+      case CommonConstants.RIGHT_PARENTHESIS:
+        this.inputRightParenthesis(len);
+        break;
+      case CommonConstants.SQUARE:
+      case CommonConstants.CUBE:
+      case CommonConstants.FACTORIAL:
+        this.inputPostfixOperator(len, value);
+        break;
       default:
         this.inputOperators(len, value);
         break;
@@ -198,16 +230,22 @@ struct HomePage {
     if (!this.validateEnter(last, value)) {
       return;
     }
-    if (!last) {
-      this.expressions.push(value);
-    } else if (last === CommonConstants.SQRT) {
-      this.expressions.push(value);
-    } else if (!secondLast) {
+    if ((last === CommonConstants.MIN) && (len === 1 || secondLast === CommonConstants.LEFT_PARENTHESIS ||
+      secondLast === CommonConstants.SQRT || (secondLast !== undefined && this.isBinaryOperator(secondLast)))) {
       this.expressions[len - 1] += value;
-    } else if (secondLast && CalculateUtil.isSymbol(secondLast)) {
-      this.expressions[len -1] += value;
-    } else if (secondLast && !CalculateUtil.isSymbol(secondLast)) {
+    } else if (!last) {
       this.expressions.push(value);
+    } else if (last === CommonConstants.SQRT || last === CommonConstants.LEFT_PARENTHESIS ||
+      this.isBinaryOperator(last)) {
+      this.expressions.push(value);
+    } else if (last === CommonConstants.RIGHT_PARENTHESIS || this.isPostfixOperator(last)) {
+      this.expressions.push(CommonConstants.MUL);
+      this.expressions.push(value);
+    } else if (secondLast && (CalculateUtil.isSymbol(secondLast) ||
+      secondLast === CommonConstants.LEFT_PARENTHESIS || secondLast === CommonConstants.SQRT)) {
+      this.expressions[len -1] += value;
+    } else {
+      this.expressions[len - 1] += value;
     }
     this.formatInputValue();
     if (value !== CommonConstants.DOTS) {
@@ -226,10 +264,13 @@ struct HomePage {
     if (!last && value === CommonConstants.PERCENT_SIGN) {
       return false;
     }
-    if ((last === CommonConstants.MIN) && (value === CommonConstants.PERCENT_SIGN)) {
+    if ((last === CommonConstants.MIN || last === CommonConstants.SQRT ||
+      last === CommonConstants.LEFT_PARENTHESIS || this.isBinaryOperator(last)) &&
+      (value === CommonConstants.PERCENT_SIGN)) {
       return false;
     }
-    if ((last === CommonConstants.SQRT) && (value === CommonConstants.PERCENT_SIGN)) {
+    if ((last === CommonConstants.RIGHT_PARENTHESIS || this.isPostfixOperator(last)) &&
+      (value === CommonConstants.DOTS || value === CommonConstants.PERCENT_SIGN)) {
       return false;
     }
     if (last.endsWith(CommonConstants.PERCENT_SIGN)) {
@@ -281,18 +322,22 @@ struct HomePage {
   inputOperators(len: number, value: string) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     let secondLast = len > 1 ? this.expressions[len - CommonConstants.TWO] : undefined;
-    if (!last && (value === Symbol.MIN)) {
+    if ((!last || last === CommonConstants.LEFT_PARENTHESIS || last === CommonConstants.SQRT) && (value === Symbol.MIN)) {
       this.expressions.push(this.getSymbol(value));
       return;
     }
     if (!last) {
       return;
     }
-    if (!CalculateUtil.isSymbol(last)) {
+    if (this.isPostfixOperator(last) || last === CommonConstants.RIGHT_PARENTHESIS) {
       this.expressions.push(this.getSymbol(value));
       return;
     }
-    if ((value === Symbol.MIN) &&
+    if (!CalculateUtil.isSymbol(last) && last !== CommonConstants.LEFT_PARENTHESIS) {
+      this.expressions.push(this.getSymbol(value));
+      return;
+    }
+    if ((value === Symbol.MIN) && last !== CommonConstants.SQRT &&
       (last === CommonConstants.MIN || last === CommonConstants.ADD)) {
       this.expressions.pop();
       this.expressions.push(this.getSymbol(value));
@@ -317,14 +362,57 @@ struct HomePage {
    */
   inputSqrt(len: number) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
-    if (!last || CalculateUtil.isSymbol(last)) {
-      if (last !== CommonConstants.SQRT) {
-        this.expressions.push(CommonConstants.SQRT);
-      }
+    if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
+      last === CommonConstants.SQRT) {
+      this.expressions.push(CommonConstants.SQRT);
       return;
     }
     this.expressions.push(CommonConstants.MUL);
     this.expressions.push(CommonConstants.SQRT);
+  }
+
+  inputLeftParenthesis(len: number) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
+      last === CommonConstants.SQRT) {
+      this.expressions.push(CommonConstants.LEFT_PARENTHESIS);
+      return;
+    }
+    this.expressions.push(CommonConstants.MUL);
+    this.expressions.push(CommonConstants.LEFT_PARENTHESIS);
+  }
+
+  inputRightParenthesis(len: number) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!this.canCloseParenthesis() || !last || !this.isValueEnd(last) ||
+      last === CommonConstants.LEFT_PARENTHESIS) {
+      return;
+    }
+    this.expressions.push(CommonConstants.RIGHT_PARENTHESIS);
+    this.getResult();
+  }
+
+  inputPostfixOperator(len: number, value: string) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!last || !this.isValueEnd(last)) {
+      return;
+    }
+    this.expressions.push(value);
+    this.getResult();
+  }
+
+  canCloseParenthesis(): boolean {
+    let leftCount = 0;
+    let rightCount = 0;
+    this.expressions.forEach((item: string) => {
+      if (item === CommonConstants.LEFT_PARENTHESIS) {
+        leftCount++;
+      }
+      if (item === CommonConstants.RIGHT_PARENTHESIS) {
+        rightCount++;
+      }
+    });
+    return leftCount > rightCount;
   }
 
   /**
@@ -353,6 +441,21 @@ struct HomePage {
         break;
       case Symbol.SQRT:
         symbol = CommonConstants.SQRT;
+        break;
+      case Symbol.SQUARE:
+        symbol = CommonConstants.SQUARE;
+        break;
+      case Symbol.CUBE:
+        symbol = CommonConstants.CUBE;
+        break;
+      case Symbol.FACTORIAL:
+        symbol = CommonConstants.FACTORIAL;
+        break;
+      case Symbol.LEFT_PARENTHESIS:
+        symbol = CommonConstants.LEFT_PARENTHESIS;
+        break;
+      case Symbol.RIGHT_PARENTHESIS:
+        symbol = CommonConstants.RIGHT_PARENTHESIS;
         break;
       default:
         break;
@@ -392,8 +495,15 @@ struct HomePage {
    * @return Thousand percentile data.
    */
   resultFormat(value: string) {
-    let reg = (value.indexOf('.') > -1) ? new RegExp("/(\d)(?=(\d{3})+\.)/g") : new RegExp("/(\d)(?=(?:\d{3})+$)/g");
-    return value.replace(reg, '$1,');
+    if (CheckEmptyUtil.isEmpty(value) || value.indexOf(CommonConstants.E) !== -1) {
+      return value;
+    }
+    let normalized = value.replace(/,/g, '');
+    return normalized.replace(/\d+(\.\d+)?/g, (item: string) => {
+      let numberParts = item.split(CommonConstants.DOTS);
+      numberParts[0] = numberParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return (numberParts.length > 1) ? numberParts[0] + CommonConstants.DOTS + numberParts[1] : numberParts[0];
+    });
   }
 
   /**

@@ -25,7 +25,7 @@ export class CommonConstants {
   /**
    * Operator Collection.
    */
-  static readonly OPERATORS: string = '+-×÷\u221A';
+  static readonly OPERATORS: string = '+-×÷\u221A\u00B2\u00B3!';
 
   /**
    * Operators with high precedence.
@@ -56,6 +56,31 @@ export class CommonConstants {
    * Square root.
    */
   static readonly SQRT: string = '\u221A';
+
+  /**
+   * Square.
+   */
+  static readonly SQUARE: string = '\u00B2';
+
+  /**
+   * Cube.
+   */
+  static readonly CUBE: string = '\u00B3';
+
+  /**
+   * Factorial.
+   */
+  static readonly FACTORIAL: string = '!';
+
+  /**
+   * Left parenthesis.
+   */
+  static readonly LEFT_PARENTHESIS: string = '(';
+
+  /**
+   * Right parenthesis.
+   */
+  static readonly RIGHT_PARENTHESIS: string = ')';
 
   /**
    * Percent sign.
@@ -122,6 +147,11 @@ export enum Symbol {
   MUL = 'mul',
   DIV = 'div',
   SQRT = 'sqrt',
+  SQUARE = 'square',
+  CUBE = 'cube',
+  FACTORIAL = 'factorial',
+  LEFT_PARENTHESIS = 'leftParenthesis',
+  RIGHT_PARENTHESIS = 'rightParenthesis',
   CLEAN = 'clean',
   DEL = 'del',
   EQU = 'equ'
@@ -145,5 +175,8 @@ export enum SymbolicEnumeration {
   MIN = '-',
   MUL = '×',
   DIV = '÷',
-  SQRT = '\u221A'
+  SQRT = '\u221A',
+  SQUARE = '\u00B2',
+  CUBE = '\u00B3',
+  FACTORIAL = '!'
 }

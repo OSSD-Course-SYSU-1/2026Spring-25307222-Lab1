@@ -50,6 +50,13 @@ export class PressKeysBeanViewModel {
         new PressKeysBean(0, '24vp', '24vp', 'min', $r('app.media.ic_min')),
         new PressKeysBean(0, '32vp', '32vp', 'add', $r('app.media.ic_add')),
         new PressKeysBean(0, '32vp', '32vp', 'equ', $r('app.media.ic_equ'))
+      ],
+      [
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.LEFT_PARENTHESIS),
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.RIGHT_PARENTHESIS),
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.SQUARE),
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.CUBE),
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.FACTORIAL)
       ]
     ];
   }
