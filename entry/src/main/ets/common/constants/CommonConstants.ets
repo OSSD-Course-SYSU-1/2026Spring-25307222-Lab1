@@ -73,6 +73,31 @@ export class CommonConstants {
   static readonly FACTORIAL: string = '!';
 
   /**
+   * Function variable x.
+   */
+  static readonly VARIABLE_X: string = 'x';
+
+  /**
+   * Function variable y.
+   */
+  static readonly VARIABLE_Y: string = 'y';
+
+  /**
+   * Pi constant.
+   */
+  static readonly PI: string = 'π';
+
+  /**
+   * Equation equal sign.
+   */
+  static readonly EQUATION_EQUAL: string = '=';
+
+  /**
+   * Draw graph command.
+   */
+  static readonly DRAW: string = '绘图';
+
+  /**
    * Left parenthesis.
    */
   static readonly LEFT_PARENTHESIS: string = '(';
@@ -150,6 +175,11 @@ export enum Symbol {
   SQUARE = 'square',
   CUBE = 'cube',
   FACTORIAL = 'factorial',
+  VARIABLE_X = 'variableX',
+  VARIABLE_Y = 'variableY',
+  PI = 'pi',
+  EQUATION_EQUAL = 'equationEqual',
+  DRAW = 'draw',
   LEFT_PARENTHESIS = 'leftParenthesis',
   RIGHT_PARENTHESIS = 'rightParenthesis',
   CLEAN = 'clean',

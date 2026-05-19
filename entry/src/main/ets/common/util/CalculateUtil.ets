@@ -104,11 +104,11 @@ class CalculateUtil {
    *
    * @param expressions Expressions.
    */
-  parseExpression(expressions: Array<string>): string {
+  parseExpression(expressions: Array<string>, variableX?: number, variableY?: number): string {
     if (CheckEmptyUtil.isEmpty(expressions)) {
       return 'NaN';
     }
-    expressions = this.normalizeExpression(expressions);
+    expressions = this.normalizeExpression(expressions, variableX, variableY);
     if (CheckEmptyUtil.isEmpty(expressions)) {
       return 'NaN';
     }
@@ -172,7 +172,7 @@ class CalculateUtil {
     return this.dealQueue(outputQueue);
   }
 
-  normalizeExpression(expressions: Array<string>): Array<string> {
+  normalizeExpression(expressions: Array<string>, variableX?: number, variableY?: number): Array<string> {
     let result: Array<string> = [];
     expressions.forEach((item: string) => {
       if (item.indexOf(CommonConstants.PERCENT_SIGN) !== -1) {
@@ -181,6 +181,14 @@ class CalculateUtil {
           return;
         }
         result.push((this.mulOrDiv(numberValue, CommonConstants.ONE_HUNDRED, CommonConstants.DIV)).toString());
+      } else if (item === CommonConstants.VARIABLE_X) {
+        result.push((variableX !== undefined) ? variableX.toString() : item);
+      } else if (item === CommonConstants.VARIABLE_Y) {
+        result.push((variableY !== undefined) ? variableY.toString() : item);
+      } else if (item === CommonConstants.PI) {
+        result.push(Math.PI.toString());
+      } else if (item === CommonConstants.E) {
+        result.push(Math.E.toString());
       } else {
         result.push(item);
       }

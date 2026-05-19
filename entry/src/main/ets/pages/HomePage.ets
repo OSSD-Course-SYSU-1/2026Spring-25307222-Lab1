@@ -25,113 +25,139 @@ import { CommonConstants, Symbol } from '../common/constants/CommonConstants';
 struct HomePage {
   @State inputValue: string = '';
   @State calValue: string = '';
+  @State graphMessage: string = '输入表达式后点击绘图';
   private expressions: Array<string> = [];
+  private graphSettings: RenderingContextSettings = new RenderingContextSettings(true);
+  private graphContext: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.graphSettings);
+  private readonly graphWidth: number = 360;
+  private readonly graphHeight: number = 220;
+  private readonly graphXMin: number = -10;
+  private readonly graphXMax: number = 10;
+  private readonly graphYMin: number = -10;
+  private readonly graphYMax: number = 10;
 
   build() {
+    Row() {
+      this.keyPanel()
+      this.graphPanel()
+    }
+    .height(CommonConstants.FULL_PERCENT)
+    .backgroundColor($r('app.color.column_back_color'))
+  }
+
+  @Builder
+  keyPanel() {
+    Column() {
+      Row() {
+        ForEach(keysModel.getPressKeys(), (columnItem: Array<PressKeysBean>, columnItemIndex?: number) => {
+          Column() {
+            ForEach(columnItem, (keyItem: PressKeysBean, keyItemIndex?: number) => {
+              Column() {
+                Column() {
+                  if (keyItem.flag === 0) {
+                    Image(keyItem.source !== undefined ? keyItem.source : '')
+                      .width(keyItem.width)
+                      .height(keyItem.height)
+                  } else {
+                    Text(keyItem.value)
+                      .fontSize(this.getKeyFontSize(keyItem.value))
+                      .width(keyItem.width)
+                      .height(keyItem.height)
+                  }
+                }
+                .width($r('app.float.key_width'))
+                .height(
+                  this.isTallEquals(columnItem, columnItemIndex, keyItemIndex) ?
+                    $r('app.float.equals_height') : $r('app.float.key_height')
+                )
+                .borderWidth(1)
+                .borderColor($r('app.color.border_color'))
+                .borderRadius($r('app.float.border_radius'))
+                .backgroundColor(
+                  (keyItem.value === Symbol.EQU || keyItem.value === CommonConstants.DRAW) ?
+                    $r('app.color.equals_back_color') : Color.White
+                )
+                .alignItems(HorizontalAlign.Center)
+                .justifyContent(FlexAlign.Center)
+                .onClick(() => {
+                  if ((keyItem.flag === 0) || this.isTextSymbolKey(keyItem.value)) {
+                    this.inputSymbol(keyItem.value);
+                  } else {
+                    this.inputNumber(keyItem.value);
+                  }
+                })
+              }
+              .layoutWeight(
+                this.isTallEquals(columnItem, columnItemIndex, keyItemIndex) ? CommonConstants.TWO : 1
+              )
+              .width(CommonConstants.FULL_PERCENT)
+              .justifyContent(FlexAlign.Center)
+            }, (keyItem: PressKeysBean) => JSON.stringify(keyItem))
+          }
+          .layoutWeight(1)
+          .margin({
+            top: $r('app.float.margin_top'),
+            bottom: $r('app.float.margin_bottom')
+          })
+        }, (item: Array<Array<PressKeysBean>>) => JSON.stringify(item))
+      }
+      .height(CommonConstants.FULL_PERCENT)
+      .alignItems(VerticalAlign.Top)
+      .margin({
+        left: $r('app.float.margin_left'),
+        right: $r('app.float.margin_right')
+      })
+    }
+    .width('40%')
+    .height(CommonConstants.FULL_PERCENT)
+    .backgroundColor($r('app.color.row_back_color'))
+  }
+
+  @Builder
+  graphPanel() {
     Column() {
       Column() {
         TextInput({ text: this.resultFormat(this.inputValue) })
-          .height(CommonConstants.FULL_PERCENT)
-          .fontSize(
-            (this.inputValue.length > CommonConstants.INPUT_LENGTH_MAX) ?
-              $r('app.float.font_size_text') : $r('app.float.font_size_input')
-          )
+          .height(42)
+          .fontSize(24)
           .enabled(false)
           .fontColor(Color.Black)
           .textAlign(TextAlign.End)
           .backgroundColor($r('app.color.input_back_color'))
-      }
-      .width(CommonConstants.FULL_PERCENT)
-      .height($r('app.float.input_height'))
-      .alignItems(HorizontalAlign.End)
-      .margin({
-        right: $r('app.float.input_margin_right'),
-        top: $r('app.float.input_margin_top')
-      })
 
-      Column() {
         Text(this.resultFormat(this.calValue))
-          .fontSize($r('app.float.font_size_text'))
+          .fontSize(18)
           .fontColor($r('app.color.text_color'))
-      }
-      .width(CommonConstants.FULL_PERCENT)
-      .height($r('app.float.text_height'))
-      .alignItems(HorizontalAlign.End)
-      .margin({
-        right: $r('app.float.text_margin_right'),
-        bottom: $r('app.float.text_margin_bottom')
-      })
+          .height(32)
+          .width(CommonConstants.FULL_PERCENT)
+          .textAlign(TextAlign.End)
 
-      Column() {
-        Row() {
-          ForEach(keysModel.getPressKeys(), (columnItem: Array<PressKeysBean>, columnItemIndex?: number) => {
-            Column() {
-              ForEach(columnItem, (keyItem: PressKeysBean, keyItemIndex?: number) => {
-                Column() {
-                  Column() {
-                    if (keyItem.flag === 0) {
-                      Image(keyItem.source !== undefined ? keyItem.source : '')
-                        .width(keyItem.width)
-                        .height(keyItem.height)
-                    } else {
-                      Text(keyItem.value)
-                        .fontSize(
-                          (keyItem.value === CommonConstants.DOTS) ?
-                            $r('app.float.font_size_dot') : $r('app.float.font_size_text')
-                        )
-                        .width(keyItem.width)
-                        .height(keyItem.height)
-                    }
-                  }
-                  .width($r('app.float.key_width'))
-                  .height(
-                    this.isTallEquals(columnItem, columnItemIndex, keyItemIndex) ?
-                      $r('app.float.equals_height') : $r('app.float.key_height')
-                  )
-                  .borderWidth(1)
-                  .borderColor($r('app.color.border_color'))
-                  .borderRadius($r('app.float.border_radius'))
-                  .backgroundColor(
-                    (keyItem.value === Symbol.EQU) ?
-                      $r('app.color.equals_back_color') : Color.White
-                  )
-                  .alignItems(HorizontalAlign.Center)
-                  .justifyContent(FlexAlign.Center)
-                  .onClick(() => {
-                    if ((keyItem.flag === 0) || this.isTextSymbolKey(keyItem.value)) {
-                      this.inputSymbol(keyItem.value);
-                    } else {
-                      this.inputNumber(keyItem.value);
-                    }
-                  })
-                }
-                .layoutWeight(
-                  this.isTallEquals(columnItem, columnItemIndex, keyItemIndex) ? CommonConstants.TWO : 1
-                )
-                .width(CommonConstants.FULL_PERCENT)
-                .justifyContent(FlexAlign.Center)
-              }, (keyItem: PressKeysBean) => JSON.stringify(keyItem))
-            }
-            .layoutWeight(1)
-            .margin({
-              top: $r('app.float.margin_top'),
-              bottom: $r('app.float.margin_bottom')
-            })
-          }, (item: Array<Array<PressKeysBean>>) => JSON.stringify(item))
-        }
-        .height(CommonConstants.FULL_PERCENT)
-        .alignItems(VerticalAlign.Top)
-        .margin({
-          left: $r('app.float.margin_left'),
-          right: $r('app.float.margin_right')
-        })
+        Text(this.graphMessage)
+          .fontSize(14)
+          .fontColor($r('app.color.text_color'))
+          .height(28)
+          .width(CommonConstants.FULL_PERCENT)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
-      .layoutWeight(1)
       .width(CommonConstants.FULL_PERCENT)
-      .backgroundColor($r('app.color.row_back_color'))
+      .padding({ left: 12, right: 12, top: 10, bottom: 6 })
+
+      Canvas(this.graphContext)
+        .width(this.graphWidth)
+        .height(this.graphHeight)
+        .backgroundColor(Color.White)
+        .borderWidth(1)
+        .borderColor($r('app.color.border_color'))
+        .onReady(() => {
+          this.drawAxes();
+        })
     }
+    .layoutWeight(1)
     .height(CommonConstants.FULL_PERCENT)
-    .backgroundColor($r('app.color.column_back_color'))
+    .padding({ left: 12, right: 12, top: 8, bottom: 12 })
+    .backgroundColor('#EEF6FF')
+    .justifyContent(FlexAlign.SpaceBetween)
   }
 
   isTallEquals(columnItem: Array<PressKeysBean>, columnItemIndex?: number, keyItemIndex?: number) {
@@ -140,10 +166,20 @@ struct HomePage {
       (keyItemIndex === (columnItem.length - 1));
   }
 
+  getKeyFontSize(value: string): Resource | number {
+    if (value === CommonConstants.DRAW) {
+      return 18;
+    }
+    return (value === CommonConstants.DOTS) ? $r('app.float.font_size_dot') : $r('app.float.font_size_text');
+  }
+
   isTextSymbolKey(value: string): boolean {
     return value === CommonConstants.SQRT || value === CommonConstants.LEFT_PARENTHESIS ||
       value === CommonConstants.RIGHT_PARENTHESIS || value === CommonConstants.SQUARE ||
-      value === CommonConstants.CUBE || value === CommonConstants.FACTORIAL;
+      value === CommonConstants.CUBE || value === CommonConstants.FACTORIAL ||
+      value === CommonConstants.VARIABLE_X || value === CommonConstants.VARIABLE_Y ||
+      value === CommonConstants.PI || value === CommonConstants.E ||
+      value === CommonConstants.EQUATION_EQUAL || value === CommonConstants.DRAW;
   }
 
   isBinaryOperator(value: string): boolean {
@@ -158,7 +194,20 @@ struct HomePage {
 
   isValueEnd(value: string): boolean {
     return !CheckEmptyUtil.isEmpty(value) && !this.isBinaryOperator(value) &&
-      value !== CommonConstants.SQRT && value !== CommonConstants.LEFT_PARENTHESIS;
+      value !== CommonConstants.SQRT && value !== CommonConstants.LEFT_PARENTHESIS &&
+      value !== CommonConstants.EQUATION_EQUAL;
+  }
+
+  isConstant(value: string): boolean {
+    return value === CommonConstants.PI || value === CommonConstants.E;
+  }
+
+  hasVariableExpression(): boolean {
+    return this.expressions.indexOf(CommonConstants.VARIABLE_X) !== -1;
+  }
+
+  hasEquationExpression(): boolean {
+    return this.expressions.indexOf(CommonConstants.EQUATION_EQUAL) !== -1;
   }
 
 
@@ -176,12 +225,18 @@ struct HomePage {
       case Symbol.CLEAN:
         this.expressions = [];
         this.calValue = '';
+        this.graphMessage = '输入表达式后点击绘图';
+        this.drawAxes();
         break;
       case Symbol.DEL:
         this.inputDelete(len);
         break;
       case Symbol.EQU:
         if (len === 0) {
+          return;
+        }
+        if (this.hasVariableExpression() || this.hasEquationExpression()) {
+          this.drawGraph();
           return;
         }
         this.getResult().then((result: boolean) => {
@@ -208,9 +263,28 @@ struct HomePage {
       case CommonConstants.FACTORIAL:
         this.inputPostfixOperator(len, value);
         break;
+      case CommonConstants.VARIABLE_X:
+        this.inputVariable(len);
+        break;
+      case CommonConstants.VARIABLE_Y:
+        this.inputSimpleToken(len, CommonConstants.VARIABLE_Y);
+        break;
+      case CommonConstants.PI:
+      case CommonConstants.E:
+        this.inputSimpleToken(len, value);
+        break;
+      case CommonConstants.EQUATION_EQUAL:
+        this.inputEquationEqual(len);
+        break;
+      case CommonConstants.DRAW:
+        this.drawGraph();
+        break;
       default:
         this.inputOperators(len, value);
         break;
+    }
+    if (this.hasVariableExpression() || this.hasEquationExpression()) {
+      this.calValue = '';
     }
     this.formatInputValue();
   }
@@ -236,9 +310,10 @@ struct HomePage {
     } else if (!last) {
       this.expressions.push(value);
     } else if (last === CommonConstants.SQRT || last === CommonConstants.LEFT_PARENTHESIS ||
-      this.isBinaryOperator(last)) {
+      last === CommonConstants.EQUATION_EQUAL || this.isBinaryOperator(last)) {
       this.expressions.push(value);
-    } else if (last === CommonConstants.RIGHT_PARENTHESIS || this.isPostfixOperator(last)) {
+    } else if (last === CommonConstants.RIGHT_PARENTHESIS || last === CommonConstants.VARIABLE_X ||
+      last === CommonConstants.VARIABLE_Y || this.isConstant(last) || this.isPostfixOperator(last)) {
       this.expressions.push(CommonConstants.MUL);
       this.expressions.push(value);
     } else if (secondLast && (CalculateUtil.isSymbol(secondLast) ||
@@ -265,11 +340,13 @@ struct HomePage {
       return false;
     }
     if ((last === CommonConstants.MIN || last === CommonConstants.SQRT ||
-      last === CommonConstants.LEFT_PARENTHESIS || this.isBinaryOperator(last)) &&
+      last === CommonConstants.LEFT_PARENTHESIS || last === CommonConstants.EQUATION_EQUAL ||
+      this.isBinaryOperator(last)) &&
       (value === CommonConstants.PERCENT_SIGN)) {
       return false;
     }
-    if ((last === CommonConstants.RIGHT_PARENTHESIS || this.isPostfixOperator(last)) &&
+    if ((last === CommonConstants.RIGHT_PARENTHESIS || last === CommonConstants.VARIABLE_X ||
+      last === CommonConstants.VARIABLE_Y || this.isConstant(last) || this.isPostfixOperator(last)) &&
       (value === CommonConstants.DOTS || value === CommonConstants.PERCENT_SIGN)) {
       return false;
     }
@@ -322,7 +399,8 @@ struct HomePage {
   inputOperators(len: number, value: string) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     let secondLast = len > 1 ? this.expressions[len - CommonConstants.TWO] : undefined;
-    if ((!last || last === CommonConstants.LEFT_PARENTHESIS || last === CommonConstants.SQRT) && (value === Symbol.MIN)) {
+    if ((!last || last === CommonConstants.LEFT_PARENTHESIS || last === CommonConstants.SQRT ||
+      last === CommonConstants.EQUATION_EQUAL) && (value === Symbol.MIN)) {
       this.expressions.push(this.getSymbol(value));
       return;
     }
@@ -371,6 +449,36 @@ struct HomePage {
     this.expressions.push(CommonConstants.SQRT);
   }
 
+  inputVariable(len: number) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
+      last === CommonConstants.SQRT) {
+      this.expressions.push(CommonConstants.VARIABLE_X);
+      return;
+    }
+    this.expressions.push(CommonConstants.MUL);
+    this.expressions.push(CommonConstants.VARIABLE_X);
+  }
+
+  inputSimpleToken(len: number, value: string) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
+      last === CommonConstants.SQRT || last === CommonConstants.EQUATION_EQUAL) {
+      this.expressions.push(value);
+      return;
+    }
+    this.expressions.push(CommonConstants.MUL);
+    this.expressions.push(value);
+  }
+
+  inputEquationEqual(len: number) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!last || !this.isValueEnd(last) || this.expressions.indexOf(CommonConstants.EQUATION_EQUAL) !== -1) {
+      return;
+    }
+    this.expressions.push(CommonConstants.EQUATION_EQUAL);
+  }
+
   inputLeftParenthesis(len: number) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
@@ -413,6 +521,217 @@ struct HomePage {
       }
     });
     return leftCount > rightCount;
+  }
+
+  drawGraph() {
+    let expressions = this.deepCopy();
+    if (expressions.length === 0) {
+      this.graphMessage = '请输入表达式';
+      this.drawAxes();
+      return;
+    }
+    let equalIndex = expressions.indexOf(CommonConstants.EQUATION_EQUAL);
+    if (equalIndex !== -1) {
+      let leftExpressions = expressions.slice(0, equalIndex);
+      let rightExpressions = expressions.slice(equalIndex + 1);
+      if (leftExpressions.length === 1 && leftExpressions[0] === CommonConstants.VARIABLE_X &&
+        !this.hasToken(rightExpressions, CommonConstants.VARIABLE_Y)) {
+        this.drawVerticalExpression(rightExpressions);
+        return;
+      }
+      if (rightExpressions.length === 1 && rightExpressions[0] === CommonConstants.VARIABLE_X &&
+        !this.hasToken(leftExpressions, CommonConstants.VARIABLE_Y)) {
+        this.drawVerticalExpression(leftExpressions);
+        return;
+      }
+      if (leftExpressions.length === 1 && leftExpressions[0] === CommonConstants.VARIABLE_Y) {
+        this.drawFunctionExpression(rightExpressions);
+        return;
+      }
+      if (rightExpressions.length === 1 && rightExpressions[0] === CommonConstants.VARIABLE_Y) {
+        this.drawFunctionExpression(leftExpressions);
+        return;
+      }
+      this.drawImplicitExpression(leftExpressions, rightExpressions);
+      return;
+    }
+    this.drawFunctionExpression(expressions);
+  }
+
+  hasToken(expressions: Array<string>, token: string): boolean {
+    return expressions.indexOf(token) !== -1;
+  }
+
+  drawFunctionExpression(expressions: Array<string>) {
+    if (expressions.length === 0 || expressions.indexOf(CommonConstants.VARIABLE_Y) !== -1) {
+      this.graphMessage = '函数表达式不能单独包含 y';
+      this.drawAxes();
+      return;
+    }
+    this.drawAxes();
+    if (expressions.indexOf(CommonConstants.VARIABLE_X) === -1) {
+      let yText = CalculateUtil.parseExpression(Array.from(expressions));
+      let yValue = Number(yText);
+      if (yText === 'NaN' || Number.isNaN(yValue)) {
+        this.graphMessage = '表达式无法绘图';
+        return;
+      }
+      if (this.drawHorizontalLine(yValue)) {
+        this.graphMessage = '已绘制常数函数 y = ' + yText;
+      }
+      return;
+    }
+    this.graphContext.beginPath();
+    this.graphContext.strokeStyle = '#E11D48';
+    this.graphContext.lineWidth = 3;
+    let hasStarted = false;
+    let validPointCount = 0;
+    for (let pixelX = 0; pixelX <= this.graphWidth; pixelX++) {
+      let xValue = this.graphXMin + (pixelX / this.graphWidth) * (this.graphXMax - this.graphXMin);
+      let yText = CalculateUtil.parseExpression(Array.from(expressions), xValue);
+      let yValue = Number(yText);
+      if (yText === 'NaN' || Number.isNaN(yValue) ||
+        yValue === Number.POSITIVE_INFINITY || yValue === Number.NEGATIVE_INFINITY ||
+        yValue < this.graphYMin || yValue > this.graphYMax) {
+        hasStarted = false;
+        continue;
+      }
+      let pointY = this.mapYToCanvas(yValue);
+      if (!hasStarted) {
+        this.graphContext.moveTo(pixelX, pointY);
+        hasStarted = true;
+      } else {
+        this.graphContext.lineTo(pixelX, pointY);
+      }
+      validPointCount++;
+    }
+    this.graphContext.stroke();
+    this.graphMessage = validPointCount > 0 ? '绘图范围：x [-10, 10]，y [-10, 10]' : '当前范围内没有可绘制点';
+  }
+
+  drawVerticalExpression(expressions: Array<string>) {
+    let xText = CalculateUtil.parseExpression(Array.from(expressions));
+    let xValue = Number(xText);
+    this.drawAxes();
+    if (xText === 'NaN' || Number.isNaN(xValue)) {
+      this.graphMessage = 'x 的值无法计算';
+      return;
+    }
+    if (xValue < this.graphXMin || xValue > this.graphXMax) {
+      this.graphMessage = 'x = ' + xText + ' 超出当前绘图范围';
+      return;
+    }
+    let pointX = this.mapXToCanvas(xValue);
+    this.graphContext.beginPath();
+    this.graphContext.strokeStyle = '#E11D48';
+    this.graphContext.lineWidth = 3;
+    this.graphContext.moveTo(pointX, 0);
+    this.graphContext.lineTo(pointX, this.graphHeight);
+    this.graphContext.stroke();
+    this.graphMessage = '已绘制竖直直线 x = ' + xText;
+  }
+
+  drawImplicitExpression(leftExpressions: Array<string>, rightExpressions: Array<string>) {
+    this.drawAxes();
+    this.graphContext.fillStyle = '#E11D48';
+    let pointCount = 0;
+    let step = 3;
+    let threshold = 0.2;
+    for (let pixelX = 0; pixelX <= this.graphWidth; pixelX += step) {
+      let previousDiff: number | undefined = undefined;
+      let previousPixelY = 0;
+      let xValue = this.graphXMin + (pixelX / this.graphWidth) * (this.graphXMax - this.graphXMin);
+      for (let pixelY = 0; pixelY <= this.graphHeight; pixelY += step) {
+        let yValue = this.graphYMax - (pixelY / this.graphHeight) * (this.graphYMax - this.graphYMin);
+        let diff = this.evaluateDifference(leftExpressions, rightExpressions, xValue, yValue);
+        if (diff === undefined) {
+          previousDiff = undefined;
+          continue;
+        }
+        if (Math.abs(diff) < threshold ||
+          (previousDiff !== undefined && previousDiff * diff < 0)) {
+          let drawY = (previousDiff !== undefined && previousDiff * diff < 0) ?
+            Math.floor((previousPixelY + pixelY) / 2) : pixelY;
+          this.graphContext.fillRect(pixelX, drawY, 2, 2);
+          pointCount++;
+        }
+        previousDiff = diff;
+        previousPixelY = pixelY;
+      }
+    }
+    this.graphMessage = pointCount > 0 ? '已绘制隐式方程图像' : '当前范围内没有可绘制点';
+  }
+
+  evaluateDifference(leftExpressions: Array<string>, rightExpressions: Array<string>, xValue: number,
+    yValue: number): number | undefined {
+    let leftText = CalculateUtil.parseExpression(Array.from(leftExpressions), xValue, yValue);
+    let rightText = CalculateUtil.parseExpression(Array.from(rightExpressions), xValue, yValue);
+    let leftValue = Number(leftText);
+    let rightValue = Number(rightText);
+    if (leftText === 'NaN' || rightText === 'NaN' || Number.isNaN(leftValue) || Number.isNaN(rightValue)) {
+      return undefined;
+    }
+    return leftValue - rightValue;
+  }
+
+  drawHorizontalLine(yValue: number): boolean {
+    if (yValue < this.graphYMin || yValue > this.graphYMax) {
+      this.graphMessage = '函数值超出当前绘图范围';
+      return false;
+    }
+    let pointY = this.mapYToCanvas(yValue);
+    this.graphContext.beginPath();
+    this.graphContext.strokeStyle = '#E11D48';
+    this.graphContext.lineWidth = 3;
+    this.graphContext.moveTo(0, pointY);
+    this.graphContext.lineTo(this.graphWidth, pointY);
+    this.graphContext.stroke();
+    return true;
+  }
+
+  drawAxes() {
+    this.graphContext.clearRect(0, 0, this.graphWidth, this.graphHeight);
+    this.graphContext.fillStyle = '#FFFFFF';
+    this.graphContext.fillRect(0, 0, this.graphWidth, this.graphHeight);
+    this.drawGrid();
+    let xAxisY = this.mapYToCanvas(0);
+    let yAxisX = this.mapXToCanvas(0);
+    this.graphContext.beginPath();
+    this.graphContext.strokeStyle = '#182431';
+    this.graphContext.lineWidth = 1;
+    this.graphContext.moveTo(0, xAxisY);
+    this.graphContext.lineTo(this.graphWidth, xAxisY);
+    this.graphContext.moveTo(yAxisX, 0);
+    this.graphContext.lineTo(yAxisX, this.graphHeight);
+    this.graphContext.stroke();
+    this.graphContext.fillStyle = '#182431';
+    this.graphContext.font = '14px sans-serif';
+    this.graphContext.fillText('X', this.graphWidth - 18, xAxisY - 6);
+    this.graphContext.fillText('Y', yAxisX + 6, 16);
+    this.graphContext.fillText('O', yAxisX + 5, xAxisY + 15);
+  }
+
+  drawGrid() {
+    this.graphContext.beginPath();
+    this.graphContext.strokeStyle = '#D8E2EF';
+    this.graphContext.lineWidth = 1;
+    for (let index = -10; index <= 10; index += 2) {
+      let pointX = this.mapXToCanvas(index);
+      let pointY = this.mapYToCanvas(index);
+      this.graphContext.moveTo(pointX, 0);
+      this.graphContext.lineTo(pointX, this.graphHeight);
+      this.graphContext.moveTo(0, pointY);
+      this.graphContext.lineTo(this.graphWidth, pointY);
+    }
+    this.graphContext.stroke();
+  }
+
+  mapXToCanvas(xValue: number): number {
+    return ((xValue - this.graphXMin) / (this.graphXMax - this.graphXMin)) * this.graphWidth;
+  }
+
+  mapYToCanvas(yValue: number): number {
+    return this.graphHeight - ((yValue - this.graphYMin) / (this.graphYMax - this.graphYMin)) * this.graphHeight;
   }
 
   /**
@@ -479,6 +798,10 @@ struct HomePage {
    * @return Whether the result is incorrect.
    */
   async getResult() {
+    if (this.hasVariableExpression() || this.hasEquationExpression()) {
+      this.calValue = '';
+      return true;
+    }
     let calResult = CalculateUtil.parseExpression(this.deepCopy());
     if (calResult === 'NaN') {
       this.calValue = this.resourceToString($r('app.string.error'));

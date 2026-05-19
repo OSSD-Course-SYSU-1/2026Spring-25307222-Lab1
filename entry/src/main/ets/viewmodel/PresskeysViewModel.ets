@@ -57,6 +57,14 @@ export class PressKeysBeanViewModel {
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.SQUARE),
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.CUBE),
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.FACTORIAL)
+      ],
+      [
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.VARIABLE_X),
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.VARIABLE_Y),
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.PI),
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.E),
+        new PressKeysBean(1, '24vp', '43vp', CommonConstants.EQUATION_EQUAL),
+        new PressKeysBean(1, '48vp', '43vp', CommonConstants.DRAW)
       ]
     ];
   }
