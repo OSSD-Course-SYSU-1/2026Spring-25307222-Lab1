@@ -27,6 +27,13 @@ interface GraphItem {
   visible: boolean;
 }
 
+interface FunctionGraph {
+  expressionText: string;
+  expressions: Array<string>;
+  color: string;
+  verticalX?: number;
+}
+
 @Entry
 @Component
 struct HomePage {
@@ -34,16 +41,19 @@ struct HomePage {
   @State calValue: string = '';
   @State graphMessage: string = '输入表达式后点击绘图';
   @State graphItems: Array<GraphItem> = [];
+  @State showIntersections: boolean = false;
+  @State currentXMin: number = -10;
+  @State currentXMax: number = 10;
+  @State currentYMin: number = -10;
+  @State currentYMax: number = 10;
   private expressions: Array<string> = [];
   private graphSettings: RenderingContextSettings = new RenderingContextSettings(true);
   private graphContext: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.graphSettings);
   private readonly graphWidth: number = 350;
   private readonly graphHeight: number = 190;
-  private readonly graphXMin: number = -10;
-  private readonly graphXMax: number = 10;
-  private readonly graphYMin: number = -10;
-  private readonly graphYMax: number = 10;
   private readonly graphColors: Array<string> = ['#E11D48', '#2563EB', '#16A34A', '#F97316', '#7C3AED', '#0891B2'];
+  private dragLastOffsetX: number = 0;
+  private dragLastOffsetY: number = 0;
 
   build() {
     Row() {
@@ -129,13 +139,20 @@ struct HomePage {
   graphPanel() {
     Column() {
       Column() {
-        TextInput({ text: this.resultFormat(this.inputValue) })
+        Row() {
+          Text(this.resultFormat(this.inputValue))
+            .fontSize(22)
+            .fontColor('#8A8A8A')
+            .textAlign(TextAlign.End)
+            .width(CommonConstants.FULL_PERCENT)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
           .height(36)
-          .fontSize(22)
-          .enabled(false)
-          .fontColor(Color.Black)
-          .textAlign(TextAlign.End)
+          .width(CommonConstants.FULL_PERCENT)
+          .padding({ left: 14, right: 14 })
           .backgroundColor($r('app.color.input_back_color'))
+          .borderRadius(18)
 
         Text(this.resultFormat(this.calValue))
           .fontSize(16)
@@ -166,6 +183,31 @@ struct HomePage {
         .onReady(() => {
           this.drawAxes();
         })
+        .onAxisEvent((event?: AxisEvent) => {
+          if (event) {
+            this.zoomGraphByWheel(event.getVerticalAxisValue());
+          }
+        })
+        .gesture(
+          PanGesture({ direction: PanDirection.All })
+            .onActionStart(() => {
+              this.dragLastOffsetX = 0;
+              this.dragLastOffsetY = 0;
+            })
+            .onActionUpdate((event?: GestureEvent) => {
+              if (event) {
+                let deltaX = event.offsetX - this.dragLastOffsetX;
+                let deltaY = event.offsetY - this.dragLastOffsetY;
+                this.dragLastOffsetX = event.offsetX;
+                this.dragLastOffsetY = event.offsetY;
+                this.panGraph(deltaX, deltaY);
+              }
+            })
+            .onActionEnd(() => {
+              this.dragLastOffsetX = 0;
+              this.dragLastOffsetY = 0;
+            })
+        )
     }
     .layoutWeight(1)
     .height(CommonConstants.FULL_PERCENT)
@@ -189,6 +231,33 @@ struct HomePage {
           this.clearGraphs();
         })
 
+      Text('删隐藏')
+        .fontSize(12)
+        .fontColor(Color.White)
+        .textAlign(TextAlign.Center)
+        .height(28)
+        .width(58)
+        .margin({ left: 6 })
+        .borderRadius(14)
+        .backgroundColor('#0A84FF')
+        .onClick(() => {
+          this.deleteHiddenGraphs();
+        })
+
+      Text(this.showIntersections ? '标注开' : '标注关')
+        .fontSize(12)
+        .fontColor(Color.White)
+        .textAlign(TextAlign.Center)
+        .height(28)
+        .width(58)
+        .margin({ left: 6 })
+        .borderRadius(14)
+        .backgroundColor(this.showIntersections ? '#16A34A' : '#8A8A8A')
+        .onClick(() => {
+          this.showIntersections = !this.showIntersections;
+          this.redrawGraphs();
+        })
+
       Scroll() {
         Row() {
           ForEach(this.graphItems, (item: GraphItem, index?: number) => {
@@ -199,7 +268,7 @@ struct HomePage {
                 .borderRadius(4)
                 .backgroundColor(item.color)
 
-              Text((item.visible ? '显示 ' : '隐藏 ') + item.expressionText)
+              Text(item.expressionText)
                 .fontSize(12)
                 .fontColor(item.visible ? '#182431' : '#8A8A8A')
                 .maxLines(1)
@@ -233,9 +302,23 @@ struct HomePage {
                     this.showOnlyGraph(index);
                   }
                 })
+
+              Text('删除')
+                .fontSize(11)
+                .fontColor(Color.White)
+                .textAlign(TextAlign.Center)
+                .height(24)
+                .width(42)
+                .borderRadius(12)
+                .backgroundColor('#EF4444')
+                .onClick(() => {
+                  if (index !== undefined) {
+                    this.deleteGraph(index);
+                  }
+                })
             }
             .height(30)
-            .width(230)
+            .width(274)
             .padding({ left: 6, right: 4 })
             .margin({ left: 6 })
             .borderWidth(1)
@@ -726,6 +809,28 @@ struct HomePage {
     this.drawAxes();
   }
 
+  deleteGraph(index: number) {
+    if (index < 0 || index >= this.graphItems.length) {
+      return;
+    }
+    let deletedText = this.graphItems[index].expressionText;
+    let nextGraphItems = Array.from(this.graphItems);
+    nextGraphItems.splice(index, 1);
+    this.graphItems = nextGraphItems;
+    this.redrawGraphs('已删除图像：' + deletedText);
+  }
+
+  deleteHiddenGraphs() {
+    let nextGraphItems = this.graphItems.filter((item: GraphItem) => item.visible);
+    let deletedCount = this.graphItems.length - nextGraphItems.length;
+    if (deletedCount === 0) {
+      this.graphMessage = '没有隐藏图像可删除';
+      return;
+    }
+    this.graphItems = nextGraphItems;
+    this.redrawGraphs('已删除 ' + deletedCount + ' 条隐藏图像');
+  }
+
   toggleGraph(index: number) {
     let nextGraphItems = Array.from(this.graphItems);
     if (index < 0 || index >= nextGraphItems.length) {
@@ -767,6 +872,9 @@ struct HomePage {
         successCount++;
       }
     });
+    if (this.showIntersections) {
+      this.drawIntersections();
+    }
     if (message !== undefined) {
       this.graphMessage = successCount > 0 ? message : message + '，但当前范围内没有可绘制点';
       return;
@@ -776,7 +884,9 @@ struct HomePage {
       return;
     }
     this.graphMessage = successCount > 0 ?
-      '已显示 ' + successCount + ' 条图像，范围 x/y [-10, 10]' : '当前范围内没有可绘制点';
+      '已显示 ' + successCount + ' 条图像，范围 x [' + this.formatCoordinate(this.currentXMin) + ', ' +
+        this.formatCoordinate(this.currentXMax) + ']，y [' + this.formatCoordinate(this.currentYMin) + ', ' +
+        this.formatCoordinate(this.currentYMax) + ']' : '当前范围内没有可绘制点';
   }
 
   drawExpression(expressions: Array<string>, color: string): boolean {
@@ -825,12 +935,12 @@ struct HomePage {
     let hasStarted = false;
     let validPointCount = 0;
     for (let pixelX = 0; pixelX <= this.graphWidth; pixelX++) {
-      let xValue = this.graphXMin + (pixelX / this.graphWidth) * (this.graphXMax - this.graphXMin);
+      let xValue = this.currentXMin + (pixelX / this.graphWidth) * (this.currentXMax - this.currentXMin);
       let yText = CalculateUtil.parseExpression(Array.from(expressions), xValue);
       let yValue = Number(yText);
       if (yText === 'NaN' || Number.isNaN(yValue) ||
         yValue === Number.POSITIVE_INFINITY || yValue === Number.NEGATIVE_INFINITY ||
-        yValue < this.graphYMin || yValue > this.graphYMax) {
+        yValue < this.currentYMin || yValue > this.currentYMax) {
         hasStarted = false;
         continue;
       }
@@ -853,7 +963,7 @@ struct HomePage {
     if (xText === 'NaN' || Number.isNaN(xValue)) {
       return false;
     }
-    if (xValue < this.graphXMin || xValue > this.graphXMax) {
+    if (xValue < this.currentXMin || xValue > this.currentXMax) {
       return false;
     }
     let pointX = this.mapXToCanvas(xValue);
@@ -874,9 +984,9 @@ struct HomePage {
     for (let pixelX = 0; pixelX <= this.graphWidth; pixelX += step) {
       let previousDiff: number | undefined = undefined;
       let previousPixelY = 0;
-      let xValue = this.graphXMin + (pixelX / this.graphWidth) * (this.graphXMax - this.graphXMin);
+      let xValue = this.currentXMin + (pixelX / this.graphWidth) * (this.currentXMax - this.currentXMin);
       for (let pixelY = 0; pixelY <= this.graphHeight; pixelY += step) {
-        let yValue = this.graphYMax - (pixelY / this.graphHeight) * (this.graphYMax - this.graphYMin);
+        let yValue = this.currentYMax - (pixelY / this.graphHeight) * (this.currentYMax - this.currentYMin);
         let diff = this.evaluateDifference(leftExpressions, rightExpressions, xValue, yValue);
         if (diff === undefined) {
           previousDiff = undefined;
@@ -909,7 +1019,7 @@ struct HomePage {
   }
 
   drawHorizontalLine(yValue: number, color: string): boolean {
-    if (yValue < this.graphYMin || yValue > this.graphYMax) {
+    if (yValue < this.currentYMin || yValue > this.currentYMax) {
       return false;
     }
     let pointY = this.mapYToCanvas(yValue);
@@ -922,37 +1032,245 @@ struct HomePage {
     return true;
   }
 
+  drawIntersections() {
+    let functions: Array<FunctionGraph> = [];
+    this.graphItems.forEach((item: GraphItem) => {
+      if (!item.visible) {
+        return;
+      }
+      let functionGraph = this.toFunctionGraph(item);
+      if (functionGraph !== undefined) {
+        functions.push(functionGraph);
+      }
+    });
+    let points: Array<Array<number>> = [];
+    functions.forEach((item: FunctionGraph) => {
+      this.collectAxisIntersections(item, points);
+    });
+    for (let index = 0; index < functions.length; index++) {
+      for (let nextIndex = index + 1; nextIndex < functions.length; nextIndex++) {
+        this.collectFunctionIntersections(functions[index], functions[nextIndex], points);
+      }
+    }
+    this.drawIntersectionPoints(points);
+  }
+
+  toFunctionGraph(item: GraphItem): FunctionGraph | undefined {
+    let expressions = Array.from(item.expressions);
+    let equalIndex = expressions.indexOf(CommonConstants.EQUATION_EQUAL);
+    if (equalIndex !== -1) {
+      let leftExpressions = expressions.slice(0, equalIndex);
+      let rightExpressions = expressions.slice(equalIndex + 1);
+      if (leftExpressions.length === 1 && leftExpressions[0] === CommonConstants.VARIABLE_X &&
+        !this.hasToken(rightExpressions, CommonConstants.VARIABLE_Y)) {
+        let xText = CalculateUtil.parseExpression(Array.from(rightExpressions));
+        let xValue = Number(xText);
+        return (xText !== 'NaN' && !Number.isNaN(xValue)) ?
+          { expressionText: item.expressionText, expressions: [], color: item.color, verticalX: xValue } : undefined;
+      }
+      if (rightExpressions.length === 1 && rightExpressions[0] === CommonConstants.VARIABLE_X &&
+        !this.hasToken(leftExpressions, CommonConstants.VARIABLE_Y)) {
+        let xText = CalculateUtil.parseExpression(Array.from(leftExpressions));
+        let xValue = Number(xText);
+        return (xText !== 'NaN' && !Number.isNaN(xValue)) ?
+          { expressionText: item.expressionText, expressions: [], color: item.color, verticalX: xValue } : undefined;
+      }
+      if (leftExpressions.length === 1 && leftExpressions[0] === CommonConstants.VARIABLE_Y) {
+        return { expressionText: item.expressionText, expressions: rightExpressions, color: item.color };
+      }
+      if (rightExpressions.length === 1 && rightExpressions[0] === CommonConstants.VARIABLE_Y) {
+        return { expressionText: item.expressionText, expressions: leftExpressions, color: item.color };
+      }
+      return undefined;
+    }
+    if (expressions.indexOf(CommonConstants.VARIABLE_Y) !== -1) {
+      return undefined;
+    }
+    return { expressionText: item.expressionText, expressions: expressions, color: item.color };
+  }
+
+  collectAxisIntersections(item: FunctionGraph, points: Array<Array<number>>) {
+    if (item.verticalX !== undefined) {
+      this.addIntersectionPoint(points, item.verticalX, 0);
+      if (Math.abs(item.verticalX) < 0.000001) {
+        this.addIntersectionPoint(points, 0, 0);
+      }
+      return;
+    }
+    if (this.currentXMin <= 0 && this.currentXMax >= 0) {
+      let yAtAxis = this.evaluateFunctionValue(item, 0);
+      if (yAtAxis !== undefined) {
+        this.addIntersectionPoint(points, 0, yAtAxis);
+      }
+    }
+    if (!this.hasToken(item.expressions, CommonConstants.VARIABLE_X)) {
+      let yText = CalculateUtil.parseExpression(Array.from(item.expressions));
+      let yValue = Number(yText);
+      if (yText !== 'NaN' && !Number.isNaN(yValue) && Math.abs(yValue) < 0.03) {
+        this.addIntersectionPoint(points, 0, 0);
+      }
+      return;
+    }
+    let previousX: number | undefined = undefined;
+    let previousY: number | undefined = undefined;
+    for (let pixelX = 0; pixelX <= this.graphWidth; pixelX += 2) {
+      let xValue = this.canvasToX(pixelX);
+      let yValue = this.evaluateFunctionValue(item, xValue);
+      if (yValue === undefined) {
+        previousX = undefined;
+        previousY = undefined;
+        continue;
+      }
+      if (Math.abs(yValue) < 0.03) {
+        this.addIntersectionPoint(points, xValue, 0);
+      }
+      if (previousX !== undefined && previousY !== undefined && previousY * yValue < 0) {
+        let ratio = Math.abs(previousY) / (Math.abs(previousY) + Math.abs(yValue));
+        this.addIntersectionPoint(points, previousX + (xValue - previousX) * ratio, 0);
+      }
+      previousX = xValue;
+      previousY = yValue;
+    }
+  }
+
+  collectFunctionIntersections(first: FunctionGraph, second: FunctionGraph, points: Array<Array<number>>) {
+    if (first.verticalX !== undefined && second.verticalX !== undefined) {
+      return;
+    }
+    if (first.verticalX !== undefined || second.verticalX !== undefined) {
+      let vertical = first.verticalX !== undefined ? first : second;
+      let normal = first.verticalX !== undefined ? second : first;
+      let xValue = vertical.verticalX!;
+      let yValue = this.evaluateFunctionValue(normal, xValue);
+      if (yValue !== undefined) {
+        this.addIntersectionPoint(points, xValue, yValue);
+      }
+      return;
+    }
+    let previousX: number | undefined = undefined;
+    let previousDiff: number | undefined = undefined;
+    for (let pixelX = 0; pixelX <= this.graphWidth; pixelX += 2) {
+      let xValue = this.canvasToX(pixelX);
+      let firstY = this.evaluateFunctionValue(first, xValue);
+      let secondY = this.evaluateFunctionValue(second, xValue);
+      if (firstY === undefined || secondY === undefined) {
+        previousX = undefined;
+        previousDiff = undefined;
+        continue;
+      }
+      let diff = firstY - secondY;
+      if (Math.abs(diff) < 0.03) {
+        this.addIntersectionPoint(points, xValue, firstY);
+      }
+      if (previousX !== undefined && previousDiff !== undefined && previousDiff * diff < 0) {
+        let ratio = Math.abs(previousDiff) / (Math.abs(previousDiff) + Math.abs(diff));
+        let crossX = previousX + (xValue - previousX) * ratio;
+        let crossY = this.evaluateFunctionValue(first, crossX);
+        if (crossY !== undefined) {
+          this.addIntersectionPoint(points, crossX, crossY);
+        }
+      }
+      previousX = xValue;
+      previousDiff = diff;
+    }
+  }
+
+  evaluateFunctionValue(item: FunctionGraph, xValue: number): number | undefined {
+    if (item.verticalX !== undefined) {
+      return undefined;
+    }
+    let yText = CalculateUtil.parseExpression(Array.from(item.expressions), xValue);
+    let yValue = Number(yText);
+    if (yText === 'NaN' || Number.isNaN(yValue) ||
+      yValue === Number.POSITIVE_INFINITY || yValue === Number.NEGATIVE_INFINITY) {
+      return undefined;
+    }
+    if (yValue < this.currentYMin || yValue > this.currentYMax) {
+      return undefined;
+    }
+    return yValue;
+  }
+
+  addIntersectionPoint(points: Array<Array<number>>, xValue: number, yValue: number) {
+    if (xValue < this.currentXMin || xValue > this.currentXMax ||
+      yValue < this.currentYMin || yValue > this.currentYMax) {
+      return;
+    }
+    for (let index = 0; index < points.length; index++) {
+      let point = points[index];
+      if (Math.abs(point[0] - xValue) < 0.08 && Math.abs(point[1] - yValue) < 0.08) {
+        return;
+      }
+    }
+    if (points.length < 16) {
+      points.push([xValue, yValue]);
+    }
+  }
+
+  drawIntersectionPoints(points: Array<Array<number>>) {
+    points.forEach((point: Array<number>) => {
+      let pointX = this.mapXToCanvas(point[0]);
+      let pointY = this.mapYToCanvas(point[1]);
+      this.graphContext.beginPath();
+      this.graphContext.fillStyle = '#111827';
+      this.graphContext.arc(pointX, pointY, 5, 0, Math.PI * 2);
+      this.graphContext.fill();
+      let label = '(' + this.formatCoordinate(point[0]) + ',' + this.formatCoordinate(point[1]) + ')';
+      let labelX = Math.min(pointX + 8, this.graphWidth - label.length * 20 - 8);
+      let labelY = Math.max(pointY - 44, 4);
+      this.graphContext.fillStyle = '#111827';
+      this.graphContext.font = '36px sans-serif';
+      this.graphContext.fillText(label, labelX, labelY + 34);
+    });
+  }
+
   drawAxes() {
     this.graphContext.clearRect(0, 0, this.graphWidth, this.graphHeight);
     this.graphContext.fillStyle = '#FFFFFF';
     this.graphContext.fillRect(0, 0, this.graphWidth, this.graphHeight);
     this.drawGrid();
-    let xAxisY = this.mapYToCanvas(0);
-    let yAxisX = this.mapXToCanvas(0);
     this.graphContext.beginPath();
     this.graphContext.strokeStyle = '#182431';
     this.graphContext.lineWidth = 1;
-    this.graphContext.moveTo(0, xAxisY);
-    this.graphContext.lineTo(this.graphWidth, xAxisY);
-    this.graphContext.moveTo(yAxisX, 0);
-    this.graphContext.lineTo(yAxisX, this.graphHeight);
+    let hasXAxis = this.currentYMin <= 0 && this.currentYMax >= 0;
+    let hasYAxis = this.currentXMin <= 0 && this.currentXMax >= 0;
+    let xAxisY = hasXAxis ? this.mapYToCanvas(0) : this.graphHeight;
+    let yAxisX = hasYAxis ? this.mapXToCanvas(0) : 0;
+    if (hasXAxis) {
+      this.graphContext.moveTo(0, xAxisY);
+      this.graphContext.lineTo(this.graphWidth, xAxisY);
+    }
+    if (hasYAxis) {
+      this.graphContext.moveTo(yAxisX, 0);
+      this.graphContext.lineTo(yAxisX, this.graphHeight);
+    }
     this.graphContext.stroke();
     this.graphContext.fillStyle = '#182431';
-    this.graphContext.font = '18px sans-serif';
-    this.graphContext.fillText('X', this.graphWidth - 22, xAxisY - 8);
-    this.graphContext.fillText('Y', yAxisX + 8, 22);
-    this.graphContext.fillText('0', yAxisX + 7, xAxisY + 20);
+    this.graphContext.font = '36px sans-serif';
+    if (hasXAxis) {
+      this.graphContext.fillText('X', this.graphWidth - 42, xAxisY - 12);
+    }
+    if (hasYAxis) {
+      this.graphContext.fillText('Y', yAxisX + 12, 42);
+    }
+    if (hasXAxis && hasYAxis) {
+      this.graphContext.fillText('0', yAxisX + 12, xAxisY + 42);
+    }
   }
 
   drawGrid() {
     this.graphContext.beginPath();
     this.graphContext.strokeStyle = '#D8E2EF';
     this.graphContext.lineWidth = 1;
-    for (let index = -10; index <= 10; index += 2) {
+    let xStep = this.getGridStep(this.currentXMax - this.currentXMin);
+    let yStep = this.getGridStep(this.currentYMax - this.currentYMin);
+    for (let index = Math.ceil(this.currentXMin / xStep) * xStep; index <= this.currentXMax; index += xStep) {
       let pointX = this.mapXToCanvas(index);
-      let pointY = this.mapYToCanvas(index);
       this.graphContext.moveTo(pointX, 0);
       this.graphContext.lineTo(pointX, this.graphHeight);
+    }
+    for (let index = Math.ceil(this.currentYMin / yStep) * yStep; index <= this.currentYMax; index += yStep) {
+      let pointY = this.mapYToCanvas(index);
       this.graphContext.moveTo(0, pointY);
       this.graphContext.lineTo(this.graphWidth, pointY);
     }
@@ -960,11 +1278,77 @@ struct HomePage {
   }
 
   mapXToCanvas(xValue: number): number {
-    return ((xValue - this.graphXMin) / (this.graphXMax - this.graphXMin)) * this.graphWidth;
+    return ((xValue - this.currentXMin) / (this.currentXMax - this.currentXMin)) * this.graphWidth;
   }
 
   mapYToCanvas(yValue: number): number {
-    return this.graphHeight - ((yValue - this.graphYMin) / (this.graphYMax - this.graphYMin)) * this.graphHeight;
+    return this.graphHeight - ((yValue - this.currentYMin) / (this.currentYMax - this.currentYMin)) * this.graphHeight;
+  }
+
+  canvasToX(pixelX: number): number {
+    return this.currentXMin + (pixelX / this.graphWidth) * (this.currentXMax - this.currentXMin);
+  }
+
+  getGridStep(range: number): number {
+    let rawStep = range / 10;
+    let magnitude = Math.pow(10, Math.floor(Math.log(rawStep) / Math.LN10));
+    let normalized = rawStep / magnitude;
+    if (normalized <= 1) {
+      return magnitude;
+    }
+    if (normalized <= 2) {
+      return 2 * magnitude;
+    }
+    if (normalized <= 5) {
+      return 5 * magnitude;
+    }
+    return 10 * magnitude;
+  }
+
+  zoomGraphByWheel(verticalValue: number) {
+    if (verticalValue === 0) {
+      return;
+    }
+    let scale = verticalValue < 0 ? 0.8 : 1.25;
+    this.zoomGraph(scale);
+  }
+
+  zoomGraph(scale: number) {
+    let xCenter = (this.currentXMin + this.currentXMax) / 2;
+    let yCenter = (this.currentYMin + this.currentYMax) / 2;
+    let xHalfRange = ((this.currentXMax - this.currentXMin) * scale) / 2;
+    let yHalfRange = ((this.currentYMax - this.currentYMin) * scale) / 2;
+    if (xHalfRange < 0.2 || yHalfRange < 0.2 || xHalfRange > 1000 || yHalfRange > 1000) {
+      return;
+    }
+    this.currentXMin = xCenter - xHalfRange;
+    this.currentXMax = xCenter + xHalfRange;
+    this.currentYMin = yCenter - yHalfRange;
+    this.currentYMax = yCenter + yHalfRange;
+    this.redrawGraphs('缩放范围：x [' + this.formatCoordinate(this.currentXMin) + ', ' +
+      this.formatCoordinate(this.currentXMax) + ']');
+  }
+
+  panGraph(deltaX: number, deltaY: number) {
+    if (deltaX === 0 && deltaY === 0) {
+      return;
+    }
+    let xShift = -deltaX * (this.currentXMax - this.currentXMin) / this.graphWidth;
+    let yShift = deltaY * (this.currentYMax - this.currentYMin) / this.graphHeight;
+    this.currentXMin += xShift;
+    this.currentXMax += xShift;
+    this.currentYMin += yShift;
+    this.currentYMax += yShift;
+    this.redrawGraphs('拖动范围：x [' + this.formatCoordinate(this.currentXMin) + ', ' +
+      this.formatCoordinate(this.currentXMax) + ']');
+  }
+
+  formatCoordinate(value: number): string {
+    if (Math.abs(value) < 0.000001) {
+      return '0';
+    }
+    let fixed = value.toFixed(3);
+    return fixed.replace(/\.?0+$/, '');
   }
 
   /**
