@@ -25,7 +25,7 @@ export class CommonConstants {
   /**
    * Operator Collection.
    */
-  static readonly OPERATORS: string = '+-×÷\u221A\u00B2\u00B3!';
+  static readonly OPERATORS: string = '+-×÷^\u221A\u00B2\u00B3!';
 
   /**
    * Operators with high precedence.
@@ -53,6 +53,11 @@ export class CommonConstants {
   static readonly DIV: string = '÷';
 
   /**
+   * Power.
+   */
+  static readonly POWER: string = '^';
+
+  /**
    * Square root.
    */
   static readonly SQRT: string = '\u221A';
@@ -66,6 +71,21 @@ export class CommonConstants {
    * Cube.
    */
   static readonly CUBE: string = '\u00B3';
+
+  /**
+   * Square shortcut button.
+   */
+  static readonly SQUARE_KEY: string = 'x\u00B2';
+
+  /**
+   * Cube shortcut button.
+   */
+  static readonly CUBE_KEY: string = 'x\u00B3';
+
+  /**
+   * Power shortcut button.
+   */
+  static readonly X_POWER_X: string = 'x^x';
 
   /**
    * Factorial.
@@ -174,6 +194,7 @@ export enum Symbol {
   SQRT = 'sqrt',
   SQUARE = 'square',
   CUBE = 'cube',
+  X_POWER_X = 'xPowerX',
   FACTORIAL = 'factorial',
   VARIABLE_X = 'variableX',
   VARIABLE_Y = 'variableY',
@@ -205,6 +226,7 @@ export enum SymbolicEnumeration {
   MIN = '-',
   MUL = '×',
   DIV = '÷',
+  POWER = '^',
   SQRT = '\u221A',
   SQUARE = '\u00B2',
   CUBE = '\u00B3',

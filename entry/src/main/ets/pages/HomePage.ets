@@ -20,21 +20,30 @@ import keysModel from '../viewmodel/PresskeysViewModel';
 import { PressKeysBean } from '../viewmodel/PressKeysItem';
 import { CommonConstants, Symbol } from '../common/constants/CommonConstants';
 
+interface GraphItem {
+  expressionText: string;
+  expressions: Array<string>;
+  color: string;
+  visible: boolean;
+}
+
 @Entry
 @Component
 struct HomePage {
   @State inputValue: string = '';
   @State calValue: string = '';
   @State graphMessage: string = '输入表达式后点击绘图';
+  @State graphItems: Array<GraphItem> = [];
   private expressions: Array<string> = [];
   private graphSettings: RenderingContextSettings = new RenderingContextSettings(true);
   private graphContext: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.graphSettings);
-  private readonly graphWidth: number = 360;
-  private readonly graphHeight: number = 220;
+  private readonly graphWidth: number = 350;
+  private readonly graphHeight: number = 190;
   private readonly graphXMin: number = -10;
   private readonly graphXMax: number = 10;
   private readonly graphYMin: number = -10;
   private readonly graphYMax: number = 10;
+  private readonly graphColors: Array<string> = ['#E11D48', '#2563EB', '#16A34A', '#F97316', '#7C3AED', '#0891B2'];
 
   build() {
     Row() {
@@ -63,9 +72,12 @@ struct HomePage {
                       .fontSize(this.getKeyFontSize(keyItem.value))
                       .width(keyItem.width)
                       .height(keyItem.height)
+                      .textAlign(TextAlign.Center)
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Clip })
                   }
                 }
-                .width($r('app.float.key_width'))
+                .width(this.getKeyContainerWidth(keyItem.value))
                 .height(
                   this.isTallEquals(columnItem, columnItemIndex, keyItemIndex) ?
                     $r('app.float.equals_height') : $r('app.float.key_height')
@@ -118,30 +130,32 @@ struct HomePage {
     Column() {
       Column() {
         TextInput({ text: this.resultFormat(this.inputValue) })
-          .height(42)
-          .fontSize(24)
+          .height(36)
+          .fontSize(22)
           .enabled(false)
           .fontColor(Color.Black)
           .textAlign(TextAlign.End)
           .backgroundColor($r('app.color.input_back_color'))
 
         Text(this.resultFormat(this.calValue))
-          .fontSize(18)
+          .fontSize(16)
           .fontColor($r('app.color.text_color'))
-          .height(32)
+          .height(24)
           .width(CommonConstants.FULL_PERCENT)
           .textAlign(TextAlign.End)
 
         Text(this.graphMessage)
           .fontSize(14)
           .fontColor($r('app.color.text_color'))
-          .height(28)
+          .height(22)
           .width(CommonConstants.FULL_PERCENT)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
       .width(CommonConstants.FULL_PERCENT)
-      .padding({ left: 12, right: 12, top: 10, bottom: 6 })
+      .padding({ left: 12, right: 12, top: 6, bottom: 4 })
+
+      this.graphListPanel()
 
       Canvas(this.graphContext)
         .width(this.graphWidth)
@@ -155,9 +169,91 @@ struct HomePage {
     }
     .layoutWeight(1)
     .height(CommonConstants.FULL_PERCENT)
-    .padding({ left: 12, right: 12, top: 8, bottom: 12 })
+    .padding({ left: 10, right: 10, top: 6, bottom: 8 })
     .backgroundColor('#EEF6FF')
     .justifyContent(FlexAlign.SpaceBetween)
+  }
+
+  @Builder
+  graphListPanel() {
+    Row() {
+      Text('清图')
+        .fontSize(12)
+        .fontColor(Color.White)
+        .textAlign(TextAlign.Center)
+        .height(28)
+        .width(50)
+        .borderRadius(14)
+        .backgroundColor('#0A84FF')
+        .onClick(() => {
+          this.clearGraphs();
+        })
+
+      Scroll() {
+        Row() {
+          ForEach(this.graphItems, (item: GraphItem, index?: number) => {
+            Row() {
+              Text('')
+                .width(8)
+                .height(8)
+                .borderRadius(4)
+                .backgroundColor(item.color)
+
+              Text((item.visible ? '显示 ' : '隐藏 ') + item.expressionText)
+                .fontSize(12)
+                .fontColor(item.visible ? '#182431' : '#8A8A8A')
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .layoutWeight(1)
+
+              Text(item.visible ? '隐藏' : '显示')
+                .fontSize(11)
+                .fontColor(Color.White)
+                .textAlign(TextAlign.Center)
+                .height(24)
+                .width(42)
+                .borderRadius(12)
+                .backgroundColor('#0A84FF')
+                .onClick(() => {
+                  if (index !== undefined) {
+                    this.toggleGraph(index);
+                  }
+                })
+
+              Text('单独')
+                .fontSize(11)
+                .fontColor(Color.White)
+                .textAlign(TextAlign.Center)
+                .height(24)
+                .width(42)
+                .borderRadius(12)
+                .backgroundColor('#0A84FF')
+                .onClick(() => {
+                  if (index !== undefined) {
+                    this.showOnlyGraph(index);
+                  }
+                })
+            }
+            .height(30)
+            .width(230)
+            .padding({ left: 6, right: 4 })
+            .margin({ left: 6 })
+            .borderWidth(1)
+            .borderColor(item.visible ? item.color : '#C7D3E0')
+            .borderRadius(6)
+            .backgroundColor(Color.White)
+          }, (item: GraphItem) => item.expressionText + item.color)
+        }
+      }
+      .layoutWeight(1)
+      .height(32)
+      .scrollable(ScrollDirection.Horizontal)
+      .scrollBar(BarState.Off)
+    }
+    .width(CommonConstants.FULL_PERCENT)
+    .height(34)
+    .padding({ left: 12, right: 12 })
+    .alignItems(VerticalAlign.Center)
   }
 
   isTallEquals(columnItem: Array<PressKeysBean>, columnItemIndex?: number, keyItemIndex?: number) {
@@ -168,15 +264,32 @@ struct HomePage {
 
   getKeyFontSize(value: string): Resource | number {
     if (value === CommonConstants.DRAW) {
-      return 18;
+      return 14;
+    }
+    if (value === CommonConstants.X_POWER_X) {
+      return 14;
+    }
+    if (value === CommonConstants.SQUARE_KEY || value === CommonConstants.CUBE_KEY) {
+      return 20;
     }
     return (value === CommonConstants.DOTS) ? $r('app.float.font_size_dot') : $r('app.float.font_size_text');
   }
 
+  getKeyContainerWidth(value: string): Resource | string {
+    if (value === CommonConstants.DRAW || value === CommonConstants.X_POWER_X) {
+      return '56vp';
+    }
+    if (value === CommonConstants.SQUARE_KEY || value === CommonConstants.CUBE_KEY) {
+      return '52vp';
+    }
+    return $r('app.float.key_width');
+  }
+
   isTextSymbolKey(value: string): boolean {
     return value === CommonConstants.SQRT || value === CommonConstants.LEFT_PARENTHESIS ||
-      value === CommonConstants.RIGHT_PARENTHESIS || value === CommonConstants.SQUARE ||
-      value === CommonConstants.CUBE || value === CommonConstants.FACTORIAL ||
+      value === CommonConstants.RIGHT_PARENTHESIS || value === CommonConstants.SQUARE_KEY ||
+      value === CommonConstants.CUBE_KEY || value === CommonConstants.X_POWER_X ||
+      value === CommonConstants.SQUARE || value === CommonConstants.CUBE || value === CommonConstants.FACTORIAL ||
       value === CommonConstants.VARIABLE_X || value === CommonConstants.VARIABLE_Y ||
       value === CommonConstants.PI || value === CommonConstants.E ||
       value === CommonConstants.EQUATION_EQUAL || value === CommonConstants.DRAW;
@@ -184,7 +297,8 @@ struct HomePage {
 
   isBinaryOperator(value: string): boolean {
     return value === CommonConstants.ADD || value === CommonConstants.MIN ||
-      value === CommonConstants.MUL || value === CommonConstants.DIV;
+      value === CommonConstants.MUL || value === CommonConstants.DIV ||
+      value === CommonConstants.POWER;
   }
 
   isPostfixOperator(value: string): boolean {
@@ -224,9 +338,14 @@ struct HomePage {
     switch (value) {
       case Symbol.CLEAN:
         this.expressions = [];
+        this.inputValue = '';
         this.calValue = '';
-        this.graphMessage = '输入表达式后点击绘图';
-        this.drawAxes();
+        if (this.graphItems.length > 0) {
+          this.redrawGraphs('已清空输入，图像保留');
+        } else {
+          this.graphMessage = '输入表达式后点击绘图';
+          this.drawAxes();
+        }
         break;
       case Symbol.DEL:
         this.inputDelete(len);
@@ -257,6 +376,15 @@ struct HomePage {
         break;
       case CommonConstants.RIGHT_PARENTHESIS:
         this.inputRightParenthesis(len);
+        break;
+      case CommonConstants.SQUARE_KEY:
+        this.inputPowerShortcut(len, CommonConstants.SQUARE);
+        break;
+      case CommonConstants.CUBE_KEY:
+        this.inputPowerShortcut(len, CommonConstants.CUBE);
+        break;
+      case CommonConstants.X_POWER_X:
+        this.inputPowerOperator(len);
         break;
       case CommonConstants.SQUARE:
       case CommonConstants.CUBE:
@@ -452,7 +580,7 @@ struct HomePage {
   inputVariable(len: number) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
-      last === CommonConstants.SQRT) {
+      last === CommonConstants.SQRT || last === CommonConstants.EQUATION_EQUAL) {
       this.expressions.push(CommonConstants.VARIABLE_X);
       return;
     }
@@ -469,6 +597,37 @@ struct HomePage {
     }
     this.expressions.push(CommonConstants.MUL);
     this.expressions.push(value);
+  }
+
+  inputPowerShortcut(len: number, powerSymbol: string) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
+      last === CommonConstants.SQRT || last === CommonConstants.EQUATION_EQUAL) {
+      this.expressions.push(CommonConstants.VARIABLE_X);
+      this.expressions.push(powerSymbol);
+      return;
+    }
+    if (this.isValueEnd(last)) {
+      this.expressions.push(powerSymbol);
+    }
+  }
+
+  inputPowerOperator(len: number) {
+    let last = len > 0 ? this.expressions[len - 1] : undefined;
+    if (!last || last === CommonConstants.EQUATION_EQUAL || last === CommonConstants.LEFT_PARENTHESIS ||
+      last === CommonConstants.SQRT || (last !== undefined && this.isBinaryOperator(last) &&
+      last !== CommonConstants.POWER)) {
+      this.expressions.push(CommonConstants.VARIABLE_X);
+      this.expressions.push(CommonConstants.POWER);
+      this.expressions.push(CommonConstants.VARIABLE_X);
+      return;
+    }
+    if (last === CommonConstants.POWER) {
+      return;
+    }
+    if (this.isValueEnd(last)) {
+      this.expressions.push(CommonConstants.POWER);
+    }
   }
 
   inputEquationEqual(len: number) {
@@ -527,62 +686,141 @@ struct HomePage {
     let expressions = this.deepCopy();
     if (expressions.length === 0) {
       this.graphMessage = '请输入表达式';
-      this.drawAxes();
+      this.redrawGraphs();
       return;
     }
+    let message = this.addGraphItem(expressions);
+    this.redrawGraphs(message);
+  }
+
+  addGraphItem(expressions: Array<string>): string {
+    let expressionText = expressions.join('');
+    let nextGraphItems = Array.from(this.graphItems);
+    let existingIndex = -1;
+    for (let index = 0; index < nextGraphItems.length; index++) {
+      if (nextGraphItems[index].expressionText === expressionText) {
+        existingIndex = index;
+        break;
+      }
+    }
+    let message = '';
+    if (existingIndex !== -1) {
+      nextGraphItems[existingIndex].visible = true;
+      message = '已重新显示图像：' + expressionText;
+    } else {
+      nextGraphItems.push({
+        expressionText: expressionText,
+        expressions: Array.from(expressions),
+        color: this.graphColors[nextGraphItems.length % this.graphColors.length],
+        visible: true
+      });
+      message = '已添加图像：' + expressionText;
+    }
+    this.graphItems = nextGraphItems;
+    return message;
+  }
+
+  clearGraphs() {
+    this.graphItems = [];
+    this.graphMessage = '已清空图像';
+    this.drawAxes();
+  }
+
+  toggleGraph(index: number) {
+    let nextGraphItems = Array.from(this.graphItems);
+    if (index < 0 || index >= nextGraphItems.length) {
+      return;
+    }
+    nextGraphItems[index].visible = !nextGraphItems[index].visible;
+    this.graphItems = nextGraphItems;
+    this.redrawGraphs();
+  }
+
+  showOnlyGraph(index: number) {
+    let nextGraphItems = Array.from(this.graphItems);
+    if (index < 0 || index >= nextGraphItems.length) {
+      return;
+    }
+    nextGraphItems.forEach((item: GraphItem, itemIndex: number) => {
+      item.visible = itemIndex === index;
+    });
+    this.graphItems = nextGraphItems;
+    this.redrawGraphs();
+  }
+
+  redrawGraphs(message?: string) {
+    this.drawAxes();
+    if (this.graphItems.length === 0) {
+      if (message !== undefined) {
+        this.graphMessage = message;
+      }
+      return;
+    }
+    let visibleCount = 0;
+    let successCount = 0;
+    this.graphItems.forEach((item: GraphItem) => {
+      if (!item.visible) {
+        return;
+      }
+      visibleCount++;
+      if (this.drawExpression(item.expressions, item.color)) {
+        successCount++;
+      }
+    });
+    if (message !== undefined) {
+      this.graphMessage = successCount > 0 ? message : message + '，但当前范围内没有可绘制点';
+      return;
+    }
+    if (visibleCount === 0) {
+      this.graphMessage = '当前没有显示的图像';
+      return;
+    }
+    this.graphMessage = successCount > 0 ?
+      '已显示 ' + successCount + ' 条图像，范围 x/y [-10, 10]' : '当前范围内没有可绘制点';
+  }
+
+  drawExpression(expressions: Array<string>, color: string): boolean {
     let equalIndex = expressions.indexOf(CommonConstants.EQUATION_EQUAL);
     if (equalIndex !== -1) {
       let leftExpressions = expressions.slice(0, equalIndex);
       let rightExpressions = expressions.slice(equalIndex + 1);
       if (leftExpressions.length === 1 && leftExpressions[0] === CommonConstants.VARIABLE_X &&
         !this.hasToken(rightExpressions, CommonConstants.VARIABLE_Y)) {
-        this.drawVerticalExpression(rightExpressions);
-        return;
+        return this.drawVerticalExpression(rightExpressions, color);
       }
       if (rightExpressions.length === 1 && rightExpressions[0] === CommonConstants.VARIABLE_X &&
         !this.hasToken(leftExpressions, CommonConstants.VARIABLE_Y)) {
-        this.drawVerticalExpression(leftExpressions);
-        return;
+        return this.drawVerticalExpression(leftExpressions, color);
       }
       if (leftExpressions.length === 1 && leftExpressions[0] === CommonConstants.VARIABLE_Y) {
-        this.drawFunctionExpression(rightExpressions);
-        return;
+        return this.drawFunctionExpression(rightExpressions, color);
       }
       if (rightExpressions.length === 1 && rightExpressions[0] === CommonConstants.VARIABLE_Y) {
-        this.drawFunctionExpression(leftExpressions);
-        return;
+        return this.drawFunctionExpression(leftExpressions, color);
       }
-      this.drawImplicitExpression(leftExpressions, rightExpressions);
-      return;
+      return this.drawImplicitExpression(leftExpressions, rightExpressions, color);
     }
-    this.drawFunctionExpression(expressions);
+    return this.drawFunctionExpression(expressions, color);
   }
 
   hasToken(expressions: Array<string>, token: string): boolean {
     return expressions.indexOf(token) !== -1;
   }
 
-  drawFunctionExpression(expressions: Array<string>) {
+  drawFunctionExpression(expressions: Array<string>, color: string): boolean {
     if (expressions.length === 0 || expressions.indexOf(CommonConstants.VARIABLE_Y) !== -1) {
-      this.graphMessage = '函数表达式不能单独包含 y';
-      this.drawAxes();
-      return;
+      return false;
     }
-    this.drawAxes();
     if (expressions.indexOf(CommonConstants.VARIABLE_X) === -1) {
       let yText = CalculateUtil.parseExpression(Array.from(expressions));
       let yValue = Number(yText);
       if (yText === 'NaN' || Number.isNaN(yValue)) {
-        this.graphMessage = '表达式无法绘图';
-        return;
+        return false;
       }
-      if (this.drawHorizontalLine(yValue)) {
-        this.graphMessage = '已绘制常数函数 y = ' + yText;
-      }
-      return;
+      return this.drawHorizontalLine(yValue, color);
     }
     this.graphContext.beginPath();
-    this.graphContext.strokeStyle = '#E11D48';
+    this.graphContext.strokeStyle = color;
     this.graphContext.lineWidth = 3;
     let hasStarted = false;
     let validPointCount = 0;
@@ -606,34 +844,30 @@ struct HomePage {
       validPointCount++;
     }
     this.graphContext.stroke();
-    this.graphMessage = validPointCount > 0 ? '绘图范围：x [-10, 10]，y [-10, 10]' : '当前范围内没有可绘制点';
+    return validPointCount > 0;
   }
 
-  drawVerticalExpression(expressions: Array<string>) {
+  drawVerticalExpression(expressions: Array<string>, color: string): boolean {
     let xText = CalculateUtil.parseExpression(Array.from(expressions));
     let xValue = Number(xText);
-    this.drawAxes();
     if (xText === 'NaN' || Number.isNaN(xValue)) {
-      this.graphMessage = 'x 的值无法计算';
-      return;
+      return false;
     }
     if (xValue < this.graphXMin || xValue > this.graphXMax) {
-      this.graphMessage = 'x = ' + xText + ' 超出当前绘图范围';
-      return;
+      return false;
     }
     let pointX = this.mapXToCanvas(xValue);
     this.graphContext.beginPath();
-    this.graphContext.strokeStyle = '#E11D48';
+    this.graphContext.strokeStyle = color;
     this.graphContext.lineWidth = 3;
     this.graphContext.moveTo(pointX, 0);
     this.graphContext.lineTo(pointX, this.graphHeight);
     this.graphContext.stroke();
-    this.graphMessage = '已绘制竖直直线 x = ' + xText;
+    return true;
   }
 
-  drawImplicitExpression(leftExpressions: Array<string>, rightExpressions: Array<string>) {
-    this.drawAxes();
-    this.graphContext.fillStyle = '#E11D48';
+  drawImplicitExpression(leftExpressions: Array<string>, rightExpressions: Array<string>, color: string): boolean {
+    this.graphContext.fillStyle = color;
     let pointCount = 0;
     let step = 3;
     let threshold = 0.2;
@@ -659,7 +893,7 @@ struct HomePage {
         previousPixelY = pixelY;
       }
     }
-    this.graphMessage = pointCount > 0 ? '已绘制隐式方程图像' : '当前范围内没有可绘制点';
+    return pointCount > 0;
   }
 
   evaluateDifference(leftExpressions: Array<string>, rightExpressions: Array<string>, xValue: number,
@@ -674,14 +908,13 @@ struct HomePage {
     return leftValue - rightValue;
   }
 
-  drawHorizontalLine(yValue: number): boolean {
+  drawHorizontalLine(yValue: number, color: string): boolean {
     if (yValue < this.graphYMin || yValue > this.graphYMax) {
-      this.graphMessage = '函数值超出当前绘图范围';
       return false;
     }
     let pointY = this.mapYToCanvas(yValue);
     this.graphContext.beginPath();
-    this.graphContext.strokeStyle = '#E11D48';
+    this.graphContext.strokeStyle = color;
     this.graphContext.lineWidth = 3;
     this.graphContext.moveTo(0, pointY);
     this.graphContext.lineTo(this.graphWidth, pointY);
@@ -705,10 +938,10 @@ struct HomePage {
     this.graphContext.lineTo(yAxisX, this.graphHeight);
     this.graphContext.stroke();
     this.graphContext.fillStyle = '#182431';
-    this.graphContext.font = '14px sans-serif';
-    this.graphContext.fillText('X', this.graphWidth - 18, xAxisY - 6);
-    this.graphContext.fillText('Y', yAxisX + 6, 16);
-    this.graphContext.fillText('O', yAxisX + 5, xAxisY + 15);
+    this.graphContext.font = '18px sans-serif';
+    this.graphContext.fillText('X', this.graphWidth - 22, xAxisY - 8);
+    this.graphContext.fillText('Y', yAxisX + 8, 22);
+    this.graphContext.fillText('0', yAxisX + 7, xAxisY + 20);
   }
 
   drawGrid() {
@@ -757,6 +990,9 @@ struct HomePage {
         break;
       case Symbol.DIV:
         symbol = CommonConstants.DIV;
+        break;
+      case CommonConstants.POWER:
+        symbol = CommonConstants.POWER;
         break;
       case Symbol.SQRT:
         symbol = CommonConstants.SQRT;

@@ -32,7 +32,8 @@ class CalculateUtil {
 
   isBinarySymbol(value: string): boolean {
     return value === CommonConstants.ADD || value === CommonConstants.MIN ||
-      value === CommonConstants.MUL || value === CommonConstants.DIV;
+      value === CommonConstants.MUL || value === CommonConstants.DIV ||
+      value === CommonConstants.POWER;
   }
 
   isPrefixSymbol(value: string): boolean {
@@ -72,6 +73,7 @@ class CalculateUtil {
       case SymbolicEnumeration.DIV:
         result = Priority.HIGH;
         break;
+      case SymbolicEnumeration.POWER:
       case SymbolicEnumeration.SQRT:
       case SymbolicEnumeration.SQUARE:
       case SymbolicEnumeration.CUBE:
@@ -268,6 +270,9 @@ class CalculateUtil {
         break;
       case SymbolicEnumeration.DIV:
         result = this.mulOrDiv(arg1, arg2, CommonConstants.DIV);
+        break;
+      case SymbolicEnumeration.POWER:
+        result = Math.pow(Number(arg1), Number(arg2));
         break;
       default:
         break;

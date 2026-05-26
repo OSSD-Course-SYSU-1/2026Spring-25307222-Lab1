@@ -14,6 +14,13 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage) {
     // Main window is created, set main page for this ability
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+    let mainWindow = windowStage.getMainWindowSync();
+    mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE).then(() => {
+      hilog.info(0x0000, 'testTag', '%{public}s', 'Succeeded in setting landscape orientation');
+    }).catch((error) => {
+      hilog.error(0x0000, 'testTag', 'Failed to set landscape orientation. Cause: %{public}s',
+        JSON.stringify(error) ?? '');
+    });
     windowStage.loadContent('pages/HomePage', (err, data) => {
       if (err.code) {
         hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
@@ -21,7 +28,7 @@ export default class EntryAbility extends UIAbility {
       }
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
 
-      let uiContext:  UIContext | undefined = windowStage.getMainWindowSync().getUIContext()
+      let uiContext:  UIContext | undefined = mainWindow.getUIContext()
       AppStorage.setOrCreate('uiContext', uiContext);
     });
   }

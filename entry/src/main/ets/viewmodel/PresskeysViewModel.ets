@@ -54,8 +54,8 @@ export class PressKeysBeanViewModel {
       [
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.LEFT_PARENTHESIS),
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.RIGHT_PARENTHESIS),
-        new PressKeysBean(1, '24vp', '43vp', CommonConstants.SQUARE),
-        new PressKeysBean(1, '24vp', '43vp', CommonConstants.CUBE),
+        new PressKeysBean(1, '34vp', '43vp', CommonConstants.SQUARE_KEY),
+        new PressKeysBean(1, '34vp', '43vp', CommonConstants.CUBE_KEY),
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.FACTORIAL)
       ],
       [
@@ -64,7 +64,8 @@ export class PressKeysBeanViewModel {
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.PI),
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.E),
         new PressKeysBean(1, '24vp', '43vp', CommonConstants.EQUATION_EQUAL),
-        new PressKeysBean(1, '48vp', '43vp', CommonConstants.DRAW)
+        new PressKeysBean(1, '42vp', '43vp', CommonConstants.X_POWER_X),
+        new PressKeysBean(1, '56vp', '43vp', CommonConstants.DRAW)
       ]
     ];
   }
