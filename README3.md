@@ -34,6 +34,48 @@
 
 同时在 `EntryAbility` 启动窗口时主动调用窗口方向 API，将主窗口设置为横屏。这样打开应用时，虚拟机窗口会自动切换到横屏显示，不需要手动旋转后再操作。
 
+为了尝试“一次开发，多端部署”，工程已在 `module.json5` 中声明支持：
+
+```json5
+"deviceTypes": [
+  "phone",
+  "tablet",
+  "2in1"
+]
+```
+
+页面会根据可用宽度调整布局比例：
+
+- 手机横屏或较窄窗口：左侧按键区约占 40%，右侧绘图区约占 60%。
+- 平板或中等宽度窗口：左侧按键区约占 34%，右侧绘图区获得更多空间。
+- 2in1/PC 或更宽窗口：左侧按键区约占 30%，右侧图像区域进一步放大。
+
+右侧 Canvas 不再固定为单一尺寸，会根据右侧剩余空间自动调整绘图宽高，并在尺寸变化后重绘坐标轴、网格、函数曲线和交点标注。
+
+### 1.2 支持应用自由流转
+
+根据课程中“自由流转 / 跨端迁移 / 应用接续”的开发要求，工程已加入应用流转能力。现在当手机虚拟机和平板虚拟机都安装同一个应用，并满足同账号、网络、蓝牙等系统流转条件时，可以将计算器从一个设备接续到另一个设备继续使用。
+
+本项目流转的是轻量级计算器状态，不需要分布式文件，也不需要额外保存大数据。源端在 `EntryAbility.onContinue()` 中把当前状态写入 `wantParam`，目标端在 `onCreate()` 或 `onNewWant()` 中读取并恢复。
+
+流转时会保留：
+
+- 当前输入表达式。
+- 当前计算结果。
+- 已添加的函数图像列表。
+- 每条函数图像的颜色和显示 / 隐藏状态。
+- 当前坐标范围。
+- 交点标注开关状态。
+- 绘图区提示信息。
+
+工程配置中已打开：
+
+```json5
+"continuable": true
+```
+
+页面侧会持续把计算器状态保存到 `AppStorage`，迁移发生时由 `onContinue()` 取出状态并传递到目标设备。目标端收到状态后更新 `AppStorage`，页面通过流转信号恢复 UI 和图像。
+
 ### 2. 新增变量、常数和等式输入
 
 按键区新增 `x`、`y`、`π`、`e` 和 `=`，可以输入更自由的函数表达式：
@@ -289,13 +331,27 @@ e^x
 
 ### `entry/src/main/module.json5`
 
-设置应用方向为横屏：
+设置应用支持的设备类型和应用方向：
+
+```json5
+"deviceTypes": [
+  "phone",
+  "tablet",
+  "2in1"
+]
+```
 
 ```json5
 "orientation": "landscape"
 ```
 
+```json5
+"continuable": true
+```
+
 ### `entry/src/main/ets/entryability/EntryAbility.ts`
+
+负责应用启动、横屏设置和自由流转生命周期。
 
 在窗口创建时主动设置主窗口方向：
 
@@ -304,6 +360,13 @@ mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
 ```
 
 这样应用打开时会直接请求横屏显示，配合 `module.json5` 中的横屏配置，让虚拟机进入应用后自动横向展示计算器界面。
+
+新增自由流转逻辑：
+
+- `onContinue()`：源端发起应用接续时，把计算器状态写入 `wantParam`。
+- `onCreate()`：目标端冷启动时恢复流转数据。
+- `onNewWant()`：目标端已有应用实例时恢复流转数据。
+- `calculatorContinuationSignal`：通知页面重新读取状态并刷新图像。
 
 ### `entry/src/main/ets/common/constants/CommonConstants.ets`
 
@@ -348,6 +411,10 @@ x = 2
 主要负责函数绘图交互和 Canvas 绘制：
 
 - 新增 `graphPanel` 绘图区。
+- 新增页面尺寸状态 `pageWidth`、`pageHeight`，用于根据窗口宽度调整左右区域比例。
+- 将 `graphWidth`、`graphHeight` 改为状态值，右侧绘图区尺寸变化时自动更新 Canvas 尺寸。
+- 新增自由流转状态快照，将输入、结果、函数图像、坐标范围和标注开关保存到 `AppStorage`。
+- 新增流转恢复逻辑，目标设备接续后自动重绘图像。
 - 新增 `graphListPanel`，显示已添加的函数图像列表。
 - 新增 `graphItems`，保存多条函数图像的表达式、颜色和显示状态。
 - 新增 `inputVariable`，处理 `x` 输入。
@@ -371,12 +438,13 @@ x = 2
 - 新增 `drawIntersections`，用于开关显示函数交点和函数与坐标轴交点。
 - 新增 `drawAxes` 和 `drawGrid`，绘制坐标轴和网格。
 - 新增 `mapXToCanvas` 和 `mapYToCanvas`，完成数学坐标到 Canvas 坐标的转换。
+- 新增 `getKeyPanelWidth`，根据窗口宽度在手机、平板、2in1/PC 等场景下调整左侧按键区域宽度。
 
 绘图核心逻辑：
 
 ```ts
 for (let pixelX = 0; pixelX <= this.graphWidth; pixelX++) {
-  let xValue = this.graphXMin + (pixelX / this.graphWidth) * (this.graphXMax - this.graphXMin);
+  let xValue = this.currentXMin + (pixelX / this.graphWidth) * (this.currentXMax - this.currentXMin);
   let yText = CalculateUtil.parseExpression(this.deepCopy(), xValue);
   let yValue = Number(yText);
   ...
@@ -428,3 +496,4 @@ new PressKeysBean(1, '48vp', '43vp', CommonConstants.DRAW)
 - 支持三角函数和对数函数。
 - 增加函数表达式历史记录。
 - 增加图像删除、重命名和自定义颜色功能。
+- 进一步增加竖屏手机布局和更细粒度断点，使同一套代码在手机竖屏、折叠屏、平板和 PC 窗口模式下切换不同布局。

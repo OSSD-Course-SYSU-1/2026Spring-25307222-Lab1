@@ -34,9 +34,25 @@ interface FunctionGraph {
   verticalX?: number;
 }
 
+interface CalculatorContinuationState {
+  inputValue: string;
+  calValue: string;
+  graphMessage: string;
+  expressions: Array<string>;
+  graphItems: Array<GraphItem>;
+  showIntersections: boolean;
+  currentXMin: number;
+  currentXMax: number;
+  currentYMin: number;
+  currentYMax: number;
+}
+
+const CONTINUATION_STATE_KEY: string = 'calculatorContinuationState';
+
 @Entry
 @Component
 struct HomePage {
+  @StorageLink('calculatorContinuationSignal') @Watch('onContinuationSignalChanged') continuationSignal: string = '';
   @State inputValue: string = '';
   @State calValue: string = '';
   @State graphMessage: string = '输入表达式后点击绘图';
@@ -46,14 +62,25 @@ struct HomePage {
   @State currentXMax: number = 10;
   @State currentYMin: number = -10;
   @State currentYMax: number = 10;
+  @State pageWidth: number = 0;
+  @State pageHeight: number = 0;
+  @State graphWidth: number = 350;
+  @State graphHeight: number = 190;
   private expressions: Array<string> = [];
   private graphSettings: RenderingContextSettings = new RenderingContextSettings(true);
   private graphContext: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.graphSettings);
-  private readonly graphWidth: number = 350;
-  private readonly graphHeight: number = 190;
   private readonly graphColors: Array<string> = ['#E11D48', '#2563EB', '#16A34A', '#F97316', '#7C3AED', '#0891B2'];
   private dragLastOffsetX: number = 0;
   private dragLastOffsetY: number = 0;
+  private restoredStateText: string = '';
+
+  aboutToAppear() {
+    this.restoreContinuationState();
+  }
+
+  onContinuationSignalChanged() {
+    this.restoreContinuationState();
+  }
 
   build() {
     Row() {
@@ -61,7 +88,12 @@ struct HomePage {
       this.graphPanel()
     }
     .height(CommonConstants.FULL_PERCENT)
+    .width(CommonConstants.FULL_PERCENT)
     .backgroundColor($r('app.color.column_back_color'))
+    .onAreaChange((oldValue, newValue) => {
+      this.pageWidth = this.lengthToNumber(newValue.width);
+      this.pageHeight = this.lengthToNumber(newValue.height);
+    })
   }
 
   @Builder
@@ -130,7 +162,7 @@ struct HomePage {
         right: $r('app.float.margin_right')
       })
     }
-    .width('40%')
+    .width(this.getKeyPanelWidth())
     .height(CommonConstants.FULL_PERCENT)
     .backgroundColor($r('app.color.row_back_color'))
   }
@@ -174,40 +206,50 @@ struct HomePage {
 
       this.graphListPanel()
 
-      Canvas(this.graphContext)
-        .width(this.graphWidth)
-        .height(this.graphHeight)
-        .backgroundColor(Color.White)
-        .borderWidth(1)
-        .borderColor($r('app.color.border_color'))
-        .onReady(() => {
-          this.drawAxes();
-        })
-        .onAxisEvent((event?: AxisEvent) => {
-          if (event) {
-            this.zoomGraphByWheel(event.getVerticalAxisValue());
-          }
-        })
-        .gesture(
-          PanGesture({ direction: PanDirection.All })
-            .onActionStart(() => {
-              this.dragLastOffsetX = 0;
-              this.dragLastOffsetY = 0;
-            })
-            .onActionUpdate((event?: GestureEvent) => {
-              if (event) {
-                let deltaX = event.offsetX - this.dragLastOffsetX;
-                let deltaY = event.offsetY - this.dragLastOffsetY;
-                this.dragLastOffsetX = event.offsetX;
-                this.dragLastOffsetY = event.offsetY;
-                this.panGraph(deltaX, deltaY);
-              }
-            })
-            .onActionEnd(() => {
-              this.dragLastOffsetX = 0;
-              this.dragLastOffsetY = 0;
-            })
-        )
+      Column() {
+        Canvas(this.graphContext)
+          .width(this.graphWidth)
+          .height(this.graphHeight)
+          .backgroundColor(Color.White)
+          .borderWidth(1)
+          .borderColor($r('app.color.border_color'))
+          .onReady(() => {
+            this.drawAxes();
+          })
+          .onAxisEvent((event?: AxisEvent) => {
+            if (event) {
+              this.zoomGraphByWheel(event.getVerticalAxisValue());
+            }
+          })
+          .gesture(
+            PanGesture({ direction: PanDirection.All })
+              .onActionStart(() => {
+                this.dragLastOffsetX = 0;
+                this.dragLastOffsetY = 0;
+              })
+              .onActionUpdate((event?: GestureEvent) => {
+                if (event) {
+                  let deltaX = event.offsetX - this.dragLastOffsetX;
+                  let deltaY = event.offsetY - this.dragLastOffsetY;
+                  this.dragLastOffsetX = event.offsetX;
+                  this.dragLastOffsetY = event.offsetY;
+                  this.panGraph(deltaX, deltaY);
+                }
+              })
+              .onActionEnd(() => {
+                this.dragLastOffsetX = 0;
+                this.dragLastOffsetY = 0;
+              })
+          )
+      }
+      .width(CommonConstants.FULL_PERCENT)
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Center)
+      .justifyContent(FlexAlign.Center)
+      .padding({ left: 8, right: 8, bottom: 6 })
+      .onAreaChange((oldValue, newValue) => {
+        this.updateGraphSize(this.lengthToNumber(newValue.width) - 16, this.lengthToNumber(newValue.height) - 6);
+      })
     }
     .layoutWeight(1)
     .height(CommonConstants.FULL_PERCENT)
@@ -345,6 +387,102 @@ struct HomePage {
       (keyItemIndex === (columnItem.length - 1));
   }
 
+  saveContinuationState() {
+    let state: CalculatorContinuationState = {
+      inputValue: this.inputValue,
+      calValue: this.calValue,
+      graphMessage: this.graphMessage,
+      expressions: Array.from(this.expressions),
+      graphItems: this.copyGraphItems(this.graphItems),
+      showIntersections: this.showIntersections,
+      currentXMin: this.currentXMin,
+      currentXMax: this.currentXMax,
+      currentYMin: this.currentYMin,
+      currentYMax: this.currentYMax
+    };
+    let stateText = JSON.stringify(state);
+    this.restoredStateText = stateText;
+    AppStorage.setOrCreate(CONTINUATION_STATE_KEY, stateText);
+  }
+
+  restoreContinuationState() {
+    let stateText = AppStorage.get<string>(CONTINUATION_STATE_KEY);
+    if (stateText === undefined || stateText.length === 0 || stateText === this.restoredStateText) {
+      return;
+    }
+    try {
+      let state = JSON.parse(stateText) as CalculatorContinuationState;
+      this.inputValue = state.inputValue !== undefined ? state.inputValue : '';
+      this.calValue = state.calValue !== undefined ? state.calValue : '';
+      this.graphMessage = state.graphMessage !== undefined ? state.graphMessage : '已恢复流转状态';
+      this.expressions = Array.isArray(state.expressions) ? Array.from(state.expressions) : [];
+      this.graphItems = Array.isArray(state.graphItems) ? this.copyGraphItems(state.graphItems) : [];
+      this.showIntersections = state.showIntersections === true;
+      this.currentXMin = this.isValidRangeNumber(state.currentXMin) ? state.currentXMin : -10;
+      this.currentXMax = this.isValidRangeNumber(state.currentXMax) ? state.currentXMax : 10;
+      this.currentYMin = this.isValidRangeNumber(state.currentYMin) ? state.currentYMin : -10;
+      this.currentYMax = this.isValidRangeNumber(state.currentYMax) ? state.currentYMax : 10;
+      this.restoredStateText = stateText;
+      this.redrawGraphs(this.graphItems.length > 0 ? '已恢复流转图像' : this.graphMessage);
+    } catch (error) {
+      Logger.error('[HomePage] restore continuation state fail: ' + JSON.stringify(error));
+    }
+  }
+
+  copyGraphItems(items: Array<GraphItem>): Array<GraphItem> {
+    let result: Array<GraphItem> = [];
+    items.forEach((item: GraphItem, index: number) => {
+      if (item === undefined || !Array.isArray(item.expressions)) {
+        return;
+      }
+      result.push({
+        expressionText: item.expressionText !== undefined && item.expressionText.length > 0 ?
+          item.expressionText : item.expressions.join(''),
+        expressions: Array.from(item.expressions),
+        color: item.color !== undefined && item.color.length > 0 ?
+          item.color : this.graphColors[index % this.graphColors.length],
+        visible: item.visible !== false
+      });
+    });
+    return result;
+  }
+
+  isValidRangeNumber(value: number): boolean {
+    return typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value);
+  }
+
+  getKeyPanelWidth(): string {
+    if (this.pageWidth >= 1200) {
+      return '30%';
+    }
+    if (this.pageWidth >= 900) {
+      return '34%';
+    }
+    return '40%';
+  }
+
+  lengthToNumber(value: Length): number {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value !== 'string') {
+      return 0;
+    }
+    let numberValue = Number(value.toString().replace('vp', '').replace('px', '').replace('%', ''));
+    return Number.isNaN(numberValue) ? 0 : numberValue;
+  }
+
+  updateGraphSize(width: number, height: number) {
+    let nextWidth = Math.max(280, Math.floor(width));
+    let nextHeight = Math.max(160, Math.floor(height));
+    if (nextWidth === this.graphWidth && nextHeight === this.graphHeight) {
+      return;
+    }
+    this.graphWidth = nextWidth;
+    this.graphHeight = nextHeight;
+    this.redrawGraphs();
+  }
+
   getKeyFontSize(value: string): Resource | number {
     if (value === CommonConstants.DRAW) {
       return 14;
@@ -441,16 +579,17 @@ struct HomePage {
           this.drawGraph();
           return;
         }
-        this.getResult().then((result: boolean) => {
-          if (!result) {
-            return;
-          }
-          this.inputValue = this.calValue;
-          this.calValue = '';
-          this.expressions = [];
-          this.expressions.push(this.inputValue);
-        })
-        break;
+          this.getResult().then((result: boolean) => {
+            if (!result) {
+              return;
+            }
+            this.inputValue = this.calValue;
+            this.calValue = '';
+            this.expressions = [];
+            this.expressions.push(this.inputValue);
+            this.saveContinuationState();
+          })
+          break;
       case CommonConstants.SQRT:
         this.inputSqrt(len);
         break;
@@ -498,6 +637,7 @@ struct HomePage {
       this.calValue = '';
     }
     this.formatInputValue();
+    this.saveContinuationState();
   }
 
   /**
@@ -537,6 +677,7 @@ struct HomePage {
     if (value !== CommonConstants.DOTS) {
       this.getResult();
     }
+    this.saveContinuationState();
   }
 
   /**
@@ -594,11 +735,13 @@ struct HomePage {
     if (len === 0) {
       this.inputValue = '';
       this.calValue = '';
+      this.saveContinuationState();
       return;
     }
     if (!CalculateUtil.isSymbol(this.expressions[len - 1])) {
       this.getResult();
     }
+    this.saveContinuationState();
   }
 
   /**
@@ -807,6 +950,7 @@ struct HomePage {
     this.graphItems = [];
     this.graphMessage = '已清空图像';
     this.drawAxes();
+    this.saveContinuationState();
   }
 
   deleteGraph(index: number) {
@@ -859,6 +1003,7 @@ struct HomePage {
       if (message !== undefined) {
         this.graphMessage = message;
       }
+      this.saveContinuationState();
       return;
     }
     let visibleCount = 0;
@@ -877,16 +1022,19 @@ struct HomePage {
     }
     if (message !== undefined) {
       this.graphMessage = successCount > 0 ? message : message + '，但当前范围内没有可绘制点';
+      this.saveContinuationState();
       return;
     }
     if (visibleCount === 0) {
       this.graphMessage = '当前没有显示的图像';
+      this.saveContinuationState();
       return;
     }
     this.graphMessage = successCount > 0 ?
       '已显示 ' + successCount + ' 条图像，范围 x [' + this.formatCoordinate(this.currentXMin) + ', ' +
         this.formatCoordinate(this.currentXMax) + ']，y [' + this.formatCoordinate(this.currentYMin) + ', ' +
         this.formatCoordinate(this.currentYMax) + ']' : '当前范围内没有可绘制点';
+    this.saveContinuationState();
   }
 
   drawExpression(expressions: Array<string>, color: string): boolean {
@@ -1420,14 +1568,17 @@ struct HomePage {
   async getResult() {
     if (this.hasVariableExpression() || this.hasEquationExpression()) {
       this.calValue = '';
+      this.saveContinuationState();
       return true;
     }
     let calResult = CalculateUtil.parseExpression(this.deepCopy());
     if (calResult === 'NaN') {
       this.calValue = this.resourceToString($r('app.string.error'));
+      this.saveContinuationState();
       return false;
     }
     this.calValue = calResult;
+    this.saveContinuationState();
     return true;
   }
 
