@@ -1,602 +1,499 @@
-# SimpleCalculator
-
-SimpleCalculator 是一个基于 HarmonyOS ArkTS 开发的简易计算器应用。项目实现了基础的四则运算、百分号、删除、清空、等号计算、结果预览以及大数字科学计数法显示等功能。
-
-## 项目结构
-
-```text
-SimpleCalculator-master
-├── AppScope/                              # 应用级配置和资源
-├── entry/                                 # 主业务模块
-│   └── src/main/
-│       ├── ets/
-│       │   ├── entryability/
-│       │   │   └── EntryAbility.ts        # 应用入口 Ability
-│       │   ├── pages/
-│       │   │   └── HomePage.ets           # 计算器主页面
-│       │   ├── viewmodel/
-│       │   │   ├── PressKeysItem.ets      # 按键数据模型
-│       │   │   └── PresskeysViewModel.ets # 按键布局数据
-│       │   └── common/
-│       │       ├── constants/
-│       │       │   └── CommonConstants.ets# 公共常量和枚举
-│       │       └── util/
-│       │           ├── CalculateUtil.ets  # 表达式解析和计算工具
-│       │           ├── CheckEmptyUtil.ets # 空值判断工具
-│       │           └── Logger.ets         # 日志工具
-│       ├── module.json5                   # 模块配置
-│       └── resources/                     # 字符串、颜色、尺寸、图片资源
-├── hvigor/                                # 构建工具配置
-├── build-profile.json5                    # 工程构建配置
-├── hvigorfile.ts                          # Hvigor 构建脚本
-└── oh-package.json5                       # 工程包配置
-```
+# SimpleCalculator 函数绘图功能说明
 
 ## 功能概述
 
-- 支持数字 `0-9` 输入。
-- 支持小数点 `.` 输入，并限制同一个数字只能输入一个小数点。
-- 支持加、减、乘、除四则运算。
-- 支持百分号 `%`，例如 `50%` 会按 `50 / 100` 参与计算。
-- 支持清空、逐位删除和等号确认。
-- 输入表达式时会实时预览计算结果。
-- 计算结果过长时会转换为科学计数法。
-- 除数为 `0` 或非法表达式会显示错误信息。
+本次在原有科学计算器基础上新增了函数绘图功能，使计算器可以像基础图形计算器一样输入函数表达式或简单方程，并在右侧坐标系中绘制函数图像。
 
-## 应用入口分析：EntryAbility.ts
+为了给绘图区留出足够空间，应用页面改为横屏布局：
 
-文件位置：`entry/src/main/ets/entryability/EntryAbility.ts`
-
-`EntryAbility` 继承自 HarmonyOS 的 `UIAbility`，负责应用生命周期和页面加载。
-
-### onCreate
-
-```ts
-onCreate(want: Want, launchParam: AbilityConstant.LaunchParam)
+```text
+左侧：按键区
+右侧上方：表达式、普通计算结果、绘图提示
+右侧中部：函数图像列表和显示控制
+右侧下方：坐标系和函数曲线
 ```
 
-应用 Ability 创建时触发。当前代码主要通过 `hilog.info` 打印生命周期日志，方便调试应用启动过程。
+原始 `README.md` 保持不变；已有的 `README2.md` 继续记录根号、括号、平方、立方、阶乘等科学计算功能。
 
-### onWindowStageCreate
+## 新增能力
 
-```ts
-onWindowStageCreate(windowStage: window.WindowStage)
+### 1. 横屏布局
+
+页面由原来的竖向计算器布局改为横向双栏布局：
+
+- 左侧只放按键，减少视觉拥挤。
+- 右侧上方放表达式、计算结果和绘图提示。
+- 右侧中部放已添加的函数图像列表。
+- 右侧下方放坐标系和函数曲线。
+- 按键和画布整体缩小，避免在虚拟机横屏中显示不完整。
+- `module.json5` 中将 Ability 方向设置为横屏：
+
+```json5
+"orientation": "landscape"
 ```
 
-窗口创建时触发，是本应用最关键的入口逻辑：
+同时在 `EntryAbility` 启动窗口时主动调用窗口方向 API，将主窗口设置为横屏。这样打开应用时，虚拟机窗口会自动切换到横屏显示，不需要手动旋转后再操作。
 
-1. 调用 `windowStage.loadContent('pages/HomePage', ...)` 加载主页面。
-2. 如果加载失败，使用 `hilog.error` 打印错误。
-3. 如果加载成功，获取当前窗口的 `UIContext`。
-4. 将 `UIContext` 保存到 `AppStorage` 中，键名为 `uiContext`。
+为了尝试“一次开发，多端部署”，工程已在 `module.json5` 中声明支持：
 
-保存 `UIContext` 的原因是后续 `HomePage.ets` 中的 `resourceToString` 方法需要通过上下文读取资源字符串，例如错误提示 `error`。
-
-### 其他生命周期方法
-
-`onDestroy`、`onWindowStageDestroy`、`onForeground`、`onBackground` 都用于打印日志，分别对应 Ability 销毁、窗口销毁、进入前台、进入后台等生命周期事件。
-
-## 主页面分析：HomePage.ets
-
-文件位置：`entry/src/main/ets/pages/HomePage.ets`
-
-`HomePage` 是计算器的主界面，也是输入处理和结果展示的核心组件。
-
-### 状态变量
-
-```ts
-@State inputValue: string = '';
-@State calValue: string = '';
-private expressions: Array<string> = [];
+```json5
+"deviceTypes": [
+  "phone",
+  "tablet",
+  "2in1"
+]
 ```
 
-- `inputValue`：显示在上方输入框中的表达式文本。
-- `calValue`：显示在下方的实时计算结果。
-- `expressions`：真正用于计算的表达式数组，例如输入 `12+3` 后可能保存为 `['12', '+', '3']`。
+页面会根据可用宽度调整布局比例：
 
-`@State` 修饰的变量发生变化时，ArkUI 会自动刷新界面。
+- 手机横屏或较窄窗口：左侧按键区约占 40%，右侧绘图区约占 60%。
+- 平板或中等宽度窗口：左侧按键区约占 34%，右侧绘图区获得更多空间。
+- 2in1/PC 或更宽窗口：左侧按键区约占 30%，右侧图像区域进一步放大。
 
-### build 页面结构
+右侧 Canvas 不再固定为单一尺寸，会根据右侧剩余空间自动调整绘图宽高，并在尺寸变化后重绘坐标轴、网格、函数曲线和交点标注。
 
-`build()` 方法使用 ArkUI 声明式语法构建界面，整体由一个外层 `Column` 组成。
+### 1.2 支持应用自由流转
 
-页面分为三部分：
+根据课程中“自由流转 / 跨端迁移 / 应用接续”的开发要求，工程已加入应用流转能力。现在当手机虚拟机和平板虚拟机都安装同一个应用，并满足同账号、网络、蓝牙等系统流转条件时，可以将计算器从一个设备接续到另一个设备继续使用。
 
-1. 输入显示区：使用 `TextInput` 显示 `inputValue`。
-2. 结果预览区：使用 `Text` 显示 `calValue`。
-3. 按键区：使用 `ForEach` 遍历 `keysModel.getPressKeys()` 生成计算器按钮。
+本项目流转的是轻量级计算器状态，不需要分布式文件，也不需要额外保存大数据。源端在 `EntryAbility.onContinue()` 中把当前状态写入 `wantParam`，目标端在 `onCreate()` 或 `onNewWant()` 中读取并恢复。
 
-输入框会根据输入长度调整字体大小：
+流转时会保留：
 
-```ts
-(this.inputValue.length > CommonConstants.INPUT_LENGTH_MAX)
-  ? $r('app.float.font_size_text')
-  : $r('app.float.font_size_input')
+- 当前输入表达式。
+- 当前计算结果。
+- 已添加的函数图像列表。
+- 每条函数图像的颜色和显示 / 隐藏状态。
+- 当前坐标范围。
+- 交点标注开关状态。
+- 绘图区提示信息。
+
+工程配置中已打开：
+
+```json5
+"continuable": true
 ```
 
-当表达式较长时，字体变小，避免内容溢出。
+页面侧会持续把计算器状态保存到 `AppStorage`，迁移发生时由 `onContinue()` 取出状态并传递到目标设备。目标端收到状态后更新 `AppStorage`，页面通过流转信号恢复 UI 和图像。
 
-### 按键渲染逻辑
+### 2. 新增变量、常数和等式输入
 
-按键数据来自 `PresskeysViewModel.ets`。每个按键都有一个 `flag`：
+按键区新增 `x`、`y`、`π`、`e` 和 `=`，可以输入更自由的函数表达式：
 
-- `flag === 0`：表示图标按键，例如清空、删除、加减乘除、等号。
-- `flag === 1`：表示文字按键，例如数字、小数点、百分号。
-
-点击按键时，根据 `flag` 调用不同方法：
-
-```ts
-if (keyItem.flag === 0) {
-  this.inputSymbol(keyItem.value);
-} else {
-  this.inputNumber(keyItem.value);
-}
+```text
+x
+x²
+x³
+2x + 1
+√x
+√(x² + 1)
+x = 3
+y = x² + 1
+π
+e
+x^x
 ```
 
-### inputSymbol：处理操作符按键
+输入阶段支持隐式乘法：
 
-```ts
-inputSymbol(value: string)
+```text
+2x        等价于 2 × x
+x(2 + x)  等价于 x × (2 + x)
+2√x       等价于 2 × √x
 ```
 
-该方法处理清空、删除、等号和四则运算符。
+### 3. 新增“绘图”按钮
 
-主要分支如下：
+按键区新增 `绘图` 按钮。
 
-- `Symbol.CLEAN`：清空表达式和结果。
-- `Symbol.DEL`：调用 `inputDelete` 删除最后一位。
-- `Symbol.EQU`：调用 `getResult` 计算最终结果，并把结果作为新的输入值。
-- 默认分支：调用 `inputOperators` 处理加、减、乘、除。
+点击 `绘图` 会根据当前表达式绘制图像：
 
-方法最后调用 `formatInputValue()`，把 `expressions` 数组重新格式化为界面展示字符串。
+- `x² + 1` 会按 `y = x² + 1` 绘制。
+- `y = x² + 1` 会绘制对应函数曲线。
+- `4` 会按 `y = 4` 绘制水平直线。
+- `x = 3` 会绘制竖直直线。
+- `x = 9y` 会按隐式方程绘制对应直线。
 
-### inputNumber：处理数字、小数点和百分号
+如果表达式中包含 `x` 或等式，点击原来的等号按钮也会触发绘图，而不是普通数值计算。
 
-```ts
-inputNumber(value: string)
+### 4. 新增 Canvas 绘图区
+
+右侧绘图区使用 ArkUI `Canvas` 绘制：
+
+- 坐标轴
+- 网格线
+- `X`、`Y` 轴标识
+- 原点 `O`
+- 函数曲线
+
+坐标轴使用深色线条，函数图像使用多种醒目颜色，便于同时显示时区分不同曲线。
+
+### 5. 支持多条函数图像
+
+现在点击 `绘图` 不会直接覆盖上一条图像，而是会把当前表达式加入右侧的图像列表。
+
+每条图像会自动分配一种颜色：
+
+```text
+红色、蓝色、绿色、橙色、紫色、青色
 ```
 
-该方法负责把数字类输入追加到 `expressions` 中。
+右侧图像列表支持三种操作：
 
-处理流程：
+- 每条图像直接显示函数解析式，不再在解析式前重复显示“显示”二字。
+- 点击某条图像的 `显示`/`隐藏`：控制这条图像是否出现在坐标系中。
+- 点击某条图像的 `单独`：只显示这一条图像。
+- 点击某条图像的 `删除`：删除这一条图像。
+- 点击 `清图`：清空所有已添加的图像。
+- 点击 `删隐藏`：一次删除所有已经隐藏的图像。
+- 点击 `标注开` / `标注关`：控制是否显示函数交点和函数与坐标轴交点。
 
-1. 判断当前输入是否为空。
-2. 取出表达式最后一项和倒数第二项。
-3. 调用 `validateEnter` 判断当前字符是否允许输入。
-4. 根据表达式结构决定是追加到当前数字，还是作为新数字入栈。
-5. 更新 `inputValue`。
-6. 如果输入的不是小数点，则调用 `getResult()` 实时计算。
+左侧 `C` 只清空当前输入和普通计算结果，不会清空已经添加的函数图像。这样可以输入一条函数、点击 `绘图`，再按 `C` 输入下一条函数继续添加。
+
+因此可以先后输入多条函数，例如：
+
+```text
+x
+x²
+x³
+x^x
+y = 4
+x = 3
+```
+
+每次输入后点击 `绘图`，就可以在同一坐标系中同时比较多条曲线；也可以隐藏其中几条，只看单独一条。
+
+当前默认绘图范围为：
+
+```text
+x ∈ [-10, 10]
+y ∈ [-10, 10]
+```
+
+程序会在这个范围内对 `x` 进行采样，并计算每个采样点对应的 `y` 值，再映射到 Canvas 坐标上绘制曲线。多条函数同时显示时，会先重绘坐标轴，再按图像列表中处于“显示”状态的表达式逐条绘制。
+
+绘图区支持鼠标滚轮缩放。滚轮向上缩小当前坐标范围、放大图像；滚轮向下放大当前坐标范围、缩小图像。缩放后坐标轴、网格和已经添加的图像会自动重绘。
+
+绘图区也支持鼠标拖动平移。用户可以按住图像区域拖动，把坐标范围移动到需要观察的位置，方便查看缩放后位于画布边缘或画布外的交点。坐标轴标识和交点坐标使用较大的 36px 字号显示，便于在虚拟机画面中观察。
+
+开启 `标注开` 后，程序会在图上标出：
+
+- 函数与 X 轴的交点。
+- 函数与 Y 轴的交点。
+- 两条显式函数之间的交点。
+- 竖直直线 `x=a` 与普通函数之间的交点。
+
+隐式方程图像仍然可以绘制，但交点标注主要针对 `y=f(x)`、常数函数和 `x=a` 这类可稳定求值的图像。
+
+## 支持的函数表达式
+
+当前函数绘图支持已有计算器的大部分运算：
+
+| 类型 | 示例 |
+| --- | --- |
+| 四则运算 | `x + 1`、`2x - 3`、`x ÷ 2` |
+| 括号 | `(x + 1) × (x - 1)` |
+| 根号 | `√x`、`√(x + 4)` |
+| 平方 | `x²`、`(x + 1)²` |
+| 立方 | `x³` |
+| 幂运算 | `x^x`、`e^x`、`6^x`、`2^6` |
+| 常数 | `π`、`e`、`4` |
+| 显式等式 | `y = x² + 1`、`x = 3`、`x = 9y` |
+| 混合表达式 | `√(x² + 1)`、`x² + 2x + 1` |
+
+阶乘 `!` 仍然保留，但它更适合普通数值计算；在连续函数绘图中通常不建议作为主要图像函数使用。
+
+## 使用示例
+
+### 示例 1：绘制直线
+
+输入：
+
+```text
+x
+```
+
+点击：
+
+```text
+绘图
+```
+
+结果：绘制 `y = x`。
+
+### 示例 2：绘制抛物线
+
+输入：
+
+```text
+x²
+```
+
+点击 `绘图` 后，会绘制 `y = x²`。
+
+### 示例 3：绘制平移后的二次函数
+
+输入：
+
+```text
+x² + 2x + 1
+```
+
+等价于：
+
+```text
+(x + 1)²
+```
+
+点击 `绘图` 后，会绘制对应抛物线。
+
+### 示例 4：绘制根号函数
+
+输入：
+
+```text
+√x
+```
+
+点击 `绘图` 后，会绘制 `y = √x`。当 `x < 0` 时计算结果非法，绘图逻辑会自动跳过这些点。
+
+### 示例 5：绘制复合函数
+
+输入：
+
+```text
+√(x² + 1)
+```
+
+点击 `绘图` 后，会绘制该复合函数。
+
+### 示例 6：绘制常数函数
+
+输入：
+
+```text
+4
+```
+
+点击 `绘图` 后，会绘制水平直线 `y = 4`。
+
+### 示例 7：绘制竖直直线
+
+输入：
+
+```text
+x = 3
+```
+
+点击 `绘图` 后，会绘制竖直直线 `x = 3`。
+
+### 示例 8：绘制显式 y 等式
+
+输入：
+
+```text
+y = x² + 1
+```
+
+点击 `绘图` 后，会绘制 `y = x² + 1`。
+
+### 示例 9：绘制隐式方程
+
+输入：
+
+```text
+x = 9y
+```
+
+点击 `绘图` 后，会绘制这条直线。程序会对平面上的点进行采样，寻找满足左右两侧近似相等的位置。
+
+### 示例 10：绘制幂函数
+
+输入：
+
+```text
+x^x
+```
+
+点击 `绘图` 后，会绘制 `y = x^x`。当 `x` 为负数且计算结果不是实数时，程序会跳过这些点。
+
+如果先输入底数再点击 `x^x` 按键，按键会作为幂运算符使用：
+
+```text
+e^x
+6^x
+2^6
+```
+
+如果在空表达式或 `y=` 后直接点击 `x^x`，则会快捷输入 `x^x`。
+
+## 主要修改文件
+
+### `entry/src/main/module.json5`
+
+设置应用支持的设备类型和应用方向：
+
+```json5
+"deviceTypes": [
+  "phone",
+  "tablet",
+  "2in1"
+]
+```
+
+```json5
+"orientation": "landscape"
+```
+
+```json5
+"continuable": true
+```
+
+### `entry/src/main/ets/entryability/EntryAbility.ts`
+
+负责应用启动、横屏设置和自由流转生命周期。
+
+在窗口创建时主动设置主窗口方向：
+
+```ts
+mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+```
+
+这样应用打开时会直接请求横屏显示，配合 `module.json5` 中的横屏配置，让虚拟机进入应用后自动横向展示计算器界面。
+
+新增自由流转逻辑：
+
+- `onContinue()`：源端发起应用接续时，把计算器状态写入 `wantParam`。
+- `onCreate()`：目标端冷启动时恢复流转数据。
+- `onNewWant()`：目标端已有应用实例时恢复流转数据。
+- `calculatorContinuationSignal`：通知页面重新读取状态并刷新图像。
+
+### `entry/src/main/ets/common/constants/CommonConstants.ets`
+
+新增：
+
+- `VARIABLE_X`
+- `VARIABLE_Y`
+- `PI`
+- `POWER`
+- `SQUARE_KEY`
+- `CUBE_KEY`
+- `X_POWER_X`
+- `EQUATION_EQUAL`
+- `DRAW`
+
+用于表示变量、常数、幂运算、快捷作图按键、等式符号和绘图命令。
+
+### `entry/src/main/ets/common/util/CalculateUtil.ets`
+
+将表达式计算方法扩展为支持变量代入：
+
+```ts
+parseExpression(expressions: Array<string>, variableX?: number, variableY?: number): string
+```
+
+当传入 `variableX` 或 `variableY` 时，表达式中的 `x`、`y` 会被替换为对应数值，然后继续走原来的表达式解析和计算流程。
+
+此外，表达式中的 `π` 和 `e` 会被转换为 `Math.PI` 和 `Math.E` 参与计算。
+
+本次还补充了二元幂运算 `^`，因此 `x^x` 会在采样时按 `Math.pow(x, x)` 计算，`e^x`、`6^x`、`2^6` 等表达式也可以正常计算。
 
 例如：
 
-- 输入 `1`：`expressions = ['1']`
-- 再输入 `2`：`expressions = ['12']`
-- 输入 `+`：`expressions = ['12', '+']`
-- 输入 `3`：`expressions = ['12', '+', '3']`
-
-### validateEnter：输入合法性校验
-
-```ts
-validateEnter(last: string, value: string)
-```
-
-该方法用于限制非法输入：
-
-- 表达式开头不能直接输入 `%`。
-- 负号后不能直接输入 `%`。
-- 一个数字已经以 `%` 结尾时，不能继续追加字符。
-- 同一个数字不能输入多个小数点。
-- 单独的 `0` 后面不能继续输入其他数字，只允许输入 `.` 或 `%`。
-
-这些规则可以避免出现 `%%`、`1..2`、`012` 等非法表达式。
-
-### inputDelete：删除逻辑
-
-```ts
-inputDelete(len: number)
-```
-
-删除逻辑分两种情况：
-
-- 如果最后一个表达式片段长度为 `1`，直接从 `expressions` 中移除这一项。
-- 如果最后一个表达式片段长度大于 `1`，删除最后一个字符。
-
-删除后如果表达式为空，会同时清空输入值和结果值。如果删除后最后一项不是操作符，则重新计算结果。
-
-### inputOperators：运算符输入逻辑
-
-```ts
-inputOperators(len: number, value: string)
-```
-
-该方法处理 `+`、`-`、`×`、`÷` 的输入规则。
-
-主要逻辑：
-
-- 如果表达式为空且输入的是减号，允许作为负数开头。
-- 如果表达式为空且输入其他运算符，直接忽略。
-- 如果最后一项不是运算符，则把当前运算符加入表达式。
-- 如果最后一项已经是运算符，则根据当前输入决定是否替换。
-- 对连续运算符做简化处理，避免表达式结构混乱。
-
-### getSymbol：按键值转真实运算符
-
-```ts
-getSymbol(value: string)
-```
-
-界面按键中的值是语义化字符串，例如 `add`、`min`、`mul`、`div`。该方法会把它们转换成真正参与计算的符号：
-
-- `add` 转为 `+`
-- `min` 转为 `-`
-- `mul` 转为 `×`
-- `div` 转为 `÷`
-
-当前源码中乘除符号因为字符编码显示为 `脳` 和 `梅`，它们分别对应乘号和除号的计算标记。
-
-### getResult：计算结果
-
-```ts
-async getResult()
-```
-
-该方法调用 `CalculateUtil.parseExpression(this.deepCopy())` 计算表达式。
-
-使用 `deepCopy()` 的原因是 `parseExpression` 内部会改变传入数组，例如 `shift()`、`pop()`。如果直接传入原始 `expressions`，会破坏页面当前保存的表达式。
-
-当计算结果为 `'NaN'` 时，界面显示资源文件中的 `error`；否则将结果赋值给 `calValue`。
-
-### resultFormat 与 formatInputValue
-
-```ts
-resultFormat(value: string)
-formatInputValue()
-```
-
-`resultFormat` 负责对数字进行千分位格式化。
-
-`formatInputValue` 会遍历 `expressions`，对每一项调用 `resultFormat`，最后通过 `join('')` 拼接成展示用的表达式。
-
-## 计算工具分析：CalculateUtil.ets
-
-文件位置：`entry/src/main/ets/common/util/CalculateUtil.ets`
-
-`CalculateUtil` 是项目的核心计算模块，负责判断运算符、处理优先级、解析表达式、计算最终结果。
-
-### isSymbol：判断是否为运算符
-
-```ts
-isSymbol(value: string)
-```
-
-通过 `CommonConstants.OPERATORS.indexOf(value)` 判断当前字符串是否属于运算符集合。
-
-### getPriority：获取运算符优先级
-
-```ts
-getPriority(value: string): number
-```
-
-优先级定义在 `Priority` 枚举中：
-
-- `HIGH = 2`：乘法、除法。
-- `MEDIUM = 1`：加法、减法。
-- `LOW = 0`：其他情况。
-
-该方法用于后续中缀表达式转后缀表达式。
-
-### comparePriority：比较优先级
-
-```ts
-comparePriority(arg1: string, arg2: string): boolean
-```
-
-如果当前运算符 `arg1` 的优先级小于或等于栈顶运算符 `arg2`，返回 `true`。这表示栈顶运算符应该先出栈，保证乘除优先于加减，同级运算按从左到右计算。
-
-### parseExpression：表达式解析
-
-```ts
-parseExpression(expressions: Array<string>): string
-```
-
-这是计算流程的核心方法，整体思路是把中缀表达式转为后缀表达式，再计算后缀表达式。
-
-处理步骤：
-
-1. 如果表达式为空，返回 `'NaN'`。
-2. 遍历表达式，遇到 `%` 时转换为除以 `100` 的数字。
-3. 如果最后一项是运算符，则删除最后一项，避免表达式以运算符结尾。
-4. 使用 `outputStack` 保存运算符。
-5. 使用 `outputQueue` 保存后缀表达式。
-6. 遇到数字时放入 `outputQueue`。
-7. 遇到运算符时，根据优先级决定是否弹出栈顶运算符。
-8. 最后把栈中剩余运算符全部加入队列。
-9. 调用 `dealQueue(outputQueue)` 得到最终结果。
-
-例如表达式 `1 + 2 × 3` 会被转成后缀表达式：
-
 ```text
-1 2 3 × +
+表达式：x² + 2x + 1
+x = 2
+结果：9
 ```
 
-这样计算时可以自然保证乘法先执行。
+### `entry/src/main/ets/pages/HomePage.ets`
 
-### dealQueue：计算后缀表达式
+主要负责函数绘图交互和 Canvas 绘制：
 
-```ts
-dealQueue(queue: Array<string>): string
-```
+- 新增 `graphPanel` 绘图区。
+- 新增页面尺寸状态 `pageWidth`、`pageHeight`，用于根据窗口宽度调整左右区域比例。
+- 将 `graphWidth`、`graphHeight` 改为状态值，右侧绘图区尺寸变化时自动更新 Canvas 尺寸。
+- 新增自由流转状态快照，将输入、结果、函数图像、坐标范围和标注开关保存到 `AppStorage`。
+- 新增流转恢复逻辑，目标设备接续后自动重绘图像。
+- 新增 `graphListPanel`，显示已添加的函数图像列表。
+- 新增 `graphItems`，保存多条函数图像的表达式、颜色和显示状态。
+- 新增 `inputVariable`，处理 `x` 输入。
+- 修正 `=` 后直接输入 `x` 会被误补乘号的问题，使 `y=x³` 可以直接绘图。
+- 新增 `inputPowerShortcut`，处理 `x²`、`x³` 快捷按键。
+- 新增 `inputPowerOperator`，处理 `x^x` 幂运算按键；空表达式时快捷输入 `x^x`，已有底数时追加 `^`。
+- 新增 `inputSimpleToken`，处理 `y`、`π`、`e` 等简单 token。
+- 新增 `inputEquationEqual`，处理表达式中的 `=`。
+- 新增 `drawGraph`，负责把当前表达式加入图像列表。
+- 新增 `redrawGraphs`，负责按显示状态重绘多条图像。
+- 新增 `drawFunctionExpression`，处理 `y=f(x)` 和常数函数。
+- 新增 `drawVerticalExpression`，处理 `x=a` 竖直直线。
+- 新增 `drawImplicitExpression`，处理 `x=9y` 这类不能直接写成 `y=f(x)` 的简单隐式方程。
+- 新增 `toggleGraph`，用于显示或隐藏某一条图像。
+- 新增 `showOnlyGraph`，用于只显示用户选择的某一条图像。
+- 新增 `deleteGraph`，用于删除单条图像。
+- 新增 `deleteHiddenGraphs`，用于批量删除隐藏图像。
+- 新增 `clearGraphs`，用于清空全部图像。
+- 新增 `zoomGraphByWheel` 和 `zoomGraph`，用于鼠标滚轮缩放坐标范围。
+- 新增 `panGraph`，用于鼠标拖动平移坐标范围。
+- 新增 `drawIntersections`，用于开关显示函数交点和函数与坐标轴交点。
+- 新增 `drawAxes` 和 `drawGrid`，绘制坐标轴和网格。
+- 新增 `mapXToCanvas` 和 `mapYToCanvas`，完成数学坐标到 Canvas 坐标的转换。
+- 新增 `getKeyPanelWidth`，根据窗口宽度在手机、平板、2in1/PC 等场景下调整左侧按键区域宽度。
 
-该方法使用栈计算后缀表达式：
-
-1. 遇到数字，压入 `outputStack`。
-2. 遇到运算符，从栈中弹出两个数字。
-3. 调用 `calResult(first, second, current)` 计算。
-4. 把计算结果重新压回栈。
-5. 队列处理完成后，如果栈中只剩一个值，则它就是最终结果。
-
-如果最后栈中不是一个值，说明表达式非法，返回 `'NaN'`。
-
-### calResult：根据运算符分发计算
-
-```ts
-calResult(arg1: string, arg2: string, symbol: string): string
-```
-
-该方法根据运算符调用不同计算函数：
-
-- 加法、减法调用 `add`。
-- 乘法、除法调用 `mulOrDiv`。
-
-计算完成后，调用 `numberToScientificNotation` 判断是否需要转为科学计数法。
-
-### add：加减法计算
-
-```ts
-add(arg1: string, arg2: string, symbol: string): number
-```
-
-直接使用 JavaScript 浮点数做小数加减容易出现精度问题，例如 `0.1 + 0.2` 可能得到 `0.30000000000000004`。
-
-这里的处理方式是：
-
-1. 计算两个数字小数位的最大长度。
-2. 将两个数字同时乘以 `10` 的对应次方，转为整数运算。
-3. 运算完成后再除回去。
-4. 使用 `toFixed(maxLen)` 控制小数位。
-
-这样可以减少常见小数加减的精度误差。
-
-### mulOrDiv：乘除法计算
+绘图核心逻辑：
 
 ```ts
-mulOrDiv(arg1: string, arg2: string, symbol: string): number
-```
-
-乘法会去掉小数点，把两个数转成整数相乘，再根据小数总位数除以对应的 `10` 的次方。
-
-除法会根据两个数字的小数位数调整比例，尽量减少小数直接参与除法带来的精度问题。
-
-如果参数中已经包含科学计数法，则直接使用 `Number` 做运算。
-
-### numberToScientificNotation：科学计数法转换
-
-```ts
-numberToScientificNotation(result: number)
-```
-
-该方法处理过长数字和异常结果：
-
-- 如果结果是正无穷或负无穷，返回 `'NaN'`。
-- 如果结果已经包含 `e`，直接返回。
-- 如果结果有效数字长度小于 `NUM_MAX_LEN`，直接返回普通字符串。
-- 否则根据 `Math.log(result) / Math.LN10` 计算指数，并转换成 `前缀e指数` 的格式。
-
-## 按键模型分析
-
-### PressKeysItem.ets
-
-文件位置：`entry/src/main/ets/viewmodel/PressKeysItem.ets`
-
-`PressKeysBean` 是按键数据类：
-
-```ts
-export class PressKeysBean {
-  flag: number;
-  width: string;
-  height: string;
-  value: string;
-  source?: Resource;
+for (let pixelX = 0; pixelX <= this.graphWidth; pixelX++) {
+  let xValue = this.currentXMin + (pixelX / this.graphWidth) * (this.currentXMax - this.currentXMin);
+  let yText = CalculateUtil.parseExpression(this.deepCopy(), xValue);
+  let yValue = Number(yText);
+  ...
 }
 ```
 
-字段含义：
+### `entry/src/main/ets/viewmodel/PresskeysViewModel.ets`
 
-- `flag`：按键类型，`0` 表示图标按键，`1` 表示文字按键。
-- `width`：按键内部图标或文字宽度。
-- `height`：按键内部图标或文字高度。
-- `value`：按键值，用于点击后的逻辑判断。
-- `source`：图片资源，可选字段，图标按键会使用。
-
-### PresskeysViewModel.ets
-
-文件位置：`entry/src/main/ets/viewmodel/PresskeysViewModel.ets`
-
-`PressKeysBeanViewModel` 的 `getPressKeys()` 方法返回一个二维数组，用于描述计算器按键布局。
-
-每个内部数组表示一列按键：
-
-```text
-第 1 列：清空、7、4、1、%
-第 2 列：除、8、5、2、0
-第 3 列：乘、9、6、3、.
-第 4 列：删除、减、加、等号
-```
-
-主页面通过 `ForEach` 遍历这个二维数组，动态渲染按键。这样 UI 结构和按键数据分离，后续调整按钮顺序或新增按钮时，只需要修改 ViewModel 数据。
-
-## 常量分析：CommonConstants.ets
-
-文件位置：`entry/src/main/ets/common/constants/CommonConstants.ets`
-
-该文件集中定义项目中复用的常量和枚举。
-
-### CommonConstants
-
-主要常量包括：
-
-- `FULL_PERCENT`：布局宽高使用的 `100%`。
-- `OPERATORS`：运算符集合。
-- `ADD`、`MIN`、`MUL`、`DIV`：真实参与表达式计算的运算符。
-- `PERCENT_SIGN`：百分号。
-- `DOTS`：小数点。
-- `TWO`、`TEN`、`ONE_HUNDRED`：计算中常用数字。
-- `INPUT_LENGTH_MAX`：输入框大字体显示的最大长度。
-- `NUM_MAX_LEN`：普通数字显示的最大有效长度，超过后转科学计数法。
-- `E`：科学计数法中的 `e`。
-- `ZERO`、`ZERO_DOTS`：零和 `0.` 的字符串表示。
-
-### Symbol
-
-`Symbol` 枚举表示按键语义值：
+新增 `x`、`y`、`π`、`e`、`x^x`、等式输入和 `绘图` 按键，并把平方、立方按键显示为 `x²`、`x³`：
 
 ```ts
-ADD = 'add'
-MIN = 'min'
-MUL = 'mul'
-DIV = 'div'
-CLEAN = 'clean'
-DEL = 'del'
-EQU = 'equ'
+new PressKeysBean(1, '24vp', '43vp', CommonConstants.VARIABLE_X)
+new PressKeysBean(1, '48vp', '43vp', CommonConstants.DRAW)
 ```
 
-这些值来自按键模型，点击图标按钮时会传给 `inputSymbol`。
+### `entry/src/main/resources/base/element/float.json`
 
-### Priority
+调整按键高度、间距和顶部边距，使横屏布局下按键区更紧凑。
 
-`Priority` 枚举表示运算符优先级：
+## 实现思路
 
-- `HIGH`：乘除。
-- `MEDIUM`：加减。
-- `LOW`：默认低优先级。
+函数绘图的关键是“表达式重复求值”：
 
-### SymbolicEnumeration
+1. 用户输入表达式，可以是 `x²`、`y=x²`、`x=3`、`x=9y` 或 `4`。
+2. 点击 `绘图`。
+3. 程序把当前表达式保存到 `graphItems`，并分配一种曲线颜色。
+4. 程序先绘制坐标轴和网格。
+5. 程序遍历所有处于“显示”状态的函数图像。
+6. 对普通函数，从 `x = -10` 到 `x = 10` 进行采样。
+7. 每个采样点调用 `CalculateUtil.parseExpression(expressions, xValue)`。
+8. 得到 `y` 后，将数学坐标转换成 Canvas 坐标。
+9. 把有效点连接成曲线。
+10. 对隐式方程，程序会同时采样 `x` 和 `y`，寻找左右两侧差值接近 0 或发生符号变化的位置。
 
-`SymbolicEnumeration` 保存实际用于计算的运算符字符，供 `CalculateUtil` 判断和分发计算逻辑。
+如果某个点计算结果非法，例如 `√x` 在 `x < 0` 时无实数结果，程序会跳过该点，避免整条曲线报错。
 
-## 工具类分析
+## 当前限制
 
-### CheckEmptyUtil.ets
+- 初始绘图范围为 `x [-10, 10]`、`y [-10, 10]`，支持通过鼠标滚轮缩放和拖动平移。
+- 暂不支持 `sin`、`cos`、`tan`、`log`、`ln` 等函数。
+- 等式绘图目前重点支持 `y=f(x)`、`f(x)=y`、`x=a`、`a=x`，并支持基础隐式方程采样。
+- 阶乘适合离散整数计算，不适合作为连续函数绘图的主要表达式。
+- 多条图像使用固定调色板循环分配颜色，当图像数量很多时颜色会重复。
 
-文件位置：`entry/src/main/ets/common/util/CheckEmptyUtil.ets`
+## 后续可改进方向
 
-该工具类提供空值判断：
-
-- `isEmpty(obj)`：判断对象或字符串是否为 `undefined`、`null` 或空字符串。
-- `checkStrIsEmpty(str)`：判断字符串去除空格后是否为空。
-- `isEmptyArr(arr)`：判断数组长度是否为 `0`。
-
-项目中最常用的是 `isEmpty`，用于避免空值继续进入计算逻辑。
-
-### Logger.ets
-
-文件位置：`entry/src/main/ets/common/util/Logger.ets`
-
-`Logger` 对 HarmonyOS 的 `hilog` 进行了简单封装，提供：
-
-- `debug`
-- `info`
-- `warn`
-- `error`
-
-默认日志前缀为 `SimpleCalculator`，domain 为 `0xFF00`。这样项目内部可以用统一方式输出日志。
-
-## 资源文件分析
-
-### module.json5
-
-文件位置：`entry/src/main/module.json5`
-
-该文件声明模块信息：
-
-- 模块名称为 `entry`。
-- 模块类型为 `entry`。
-- 设备类型为 `phone`。
-- 主 Ability 为 `EntryAbility`。
-- 页面列表引用 `$profile:main_pages`。
-- 应用图标、名称、启动窗口背景等引用资源文件。
-
-### main_pages.json
-
-文件位置：`entry/src/main/resources/base/profile/main_pages.json`
-
-该文件声明页面路由：
-
-```json
-{
-  "src": [
-    "pages/HomePage"
-  ]
-}
-```
-
-表示当前模块包含 `HomePage` 页面。
-
-### element 资源
-
-`entry/src/main/resources/base/element` 下包含：
-
-- `string.json`：应用名称、模块描述、错误提示等字符串。
-- `float.json`：字体大小、按键宽高、边距、圆角等尺寸。
-- `color.json`：输入区、按键区、等号按钮、边框等颜色。
-
-页面中通过 `$r('app.float.xxx')`、`$r('app.color.xxx')`、`$r('app.string.xxx')` 访问这些资源。
-
-### media 资源
-
-`entry/src/main/resources/base/media` 下包含计算器图标资源，例如：
-
-- `ic_add.png`
-- `ic_min.png`
-- `ic_mul.png`
-- `ic_div.png`
-- `ic_del.png`
-- `ic_clean.png`
-- `ic_equ.png`
-
-这些图片由 `PresskeysViewModel.ets` 引用，并在 `HomePage.ets` 中渲染为图标按键。
-
-## 计算流程示例
-
-以输入 `12 + 3 × 4 =` 为例：
-
-1. 输入 `1` 和 `2`，`expressions` 变为 `['12']`。
-2. 点击加号，`expressions` 变为 `['12', '+']`。
-3. 输入 `3`，`expressions` 变为 `['12', '+', '3']`，实时结果为 `15`。
-4. 点击乘号，`expressions` 变为 `['12', '+', '3', '×']`。
-5. 输入 `4`，`expressions` 变为 `['12', '+', '3', '×', '4']`。
-6. `CalculateUtil` 将中缀表达式转为后缀表达式 `12 3 4 × +`。
-7. 后缀表达式计算结果为 `24`。
-8. 点击等号后，`inputValue` 更新为 `24`，表达式重置为 `['24']`。
-
-## 运行方式
-
-1. 使用 DevEco Studio 打开项目。
-2. 等待 Hvigor 同步工程依赖。
-3. 选择 `entry` 模块。
-4. 连接 HarmonyOS 设备或启动模拟器。
-5. 点击运行按钮安装并启动应用。
-
-## 代码特点
-
-- 页面层和计算逻辑分离：`HomePage.ets` 负责交互和展示，`CalculateUtil.ets` 负责表达式计算。
-- 按键布局数据化：按键由 ViewModel 提供，UI 通过遍历数据生成。
-- 使用资源文件统一管理颜色、尺寸、字符串和图片。
-- 通过中缀转后缀的方式处理运算符优先级，逻辑清晰。
-- 对小数运算做了精度处理，减少常见浮点误差。
-
-## 注意事项
-
-- 源码中乘号和除号常量显示为 `脳`、`梅`，这通常是字符编码显示问题。逻辑上它们分别代表乘号和除号。
-- `resultFormat` 中用于千分位格式化的正则写法较特殊，如果格式化没有生效，可以检查正则构造方式是否符合 ArkTS 运行环境。
-- `parseExpression` 会修改传入数组，因此页面层通过 `deepCopy()` 传入副本，这是非常重要的保护逻辑。
+- 增加坐标范围输入。
+- 支持触控手势缩放。
+- 支持三角函数和对数函数。
+- 增加函数表达式历史记录。
+- 增加图像删除、重命名和自定义颜色功能。
+- 进一步增加竖屏手机布局和更细粒度断点，使同一套代码在手机竖屏、折叠屏、平板和 PC 窗口模式下切换不同布局。
