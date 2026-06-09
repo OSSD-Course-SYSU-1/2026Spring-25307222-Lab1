@@ -25,7 +25,7 @@ export class CommonConstants {
   /**
    * Operator Collection.
    */
-  static readonly OPERATORS: string = '+-×÷^\u221A\u00B2\u00B3!';
+  static readonly OPERATORS: string = '+-×÷^\u221A\u00B2\u00B3!sincostan';
 
   /**
    * Operators with high precedence.
@@ -61,6 +61,21 @@ export class CommonConstants {
    * Square root.
    */
   static readonly SQRT: string = '\u221A';
+
+  /**
+   * Sine function.
+   */
+  static readonly SIN: string = 'sin';
+
+  /**
+   * Cosine function.
+   */
+  static readonly COS: string = 'cos';
+
+  /**
+   * Tangent function.
+   */
+  static readonly TAN: string = 'tan';
 
   /**
    * Square.
@@ -192,6 +207,9 @@ export enum Symbol {
   MUL = 'mul',
   DIV = 'div',
   SQRT = 'sqrt',
+  SIN = 'sin',
+  COS = 'cos',
+  TAN = 'tan',
   SQUARE = 'square',
   CUBE = 'cube',
   X_POWER_X = 'xPowerX',
@@ -228,6 +246,9 @@ export enum SymbolicEnumeration {
   DIV = '÷',
   POWER = '^',
   SQRT = '\u221A',
+  SIN = 'sin',
+  COS = 'cos',
+  TAN = 'tan',
   SQUARE = '\u00B2',
   CUBE = '\u00B3',
   FACTORIAL = '!'

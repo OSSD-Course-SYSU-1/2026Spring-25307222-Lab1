@@ -490,6 +490,9 @@ struct HomePage {
     if (value === CommonConstants.X_POWER_X) {
       return 14;
     }
+    if (this.isTrigFunction(value)) {
+      return 14;
+    }
     if (value === CommonConstants.SQUARE_KEY || value === CommonConstants.CUBE_KEY) {
       return 20;
     }
@@ -499,6 +502,9 @@ struct HomePage {
   getKeyContainerWidth(value: string): Resource | string {
     if (value === CommonConstants.DRAW || value === CommonConstants.X_POWER_X) {
       return '56vp';
+    }
+    if (this.isTrigFunction(value)) {
+      return '48vp';
     }
     if (value === CommonConstants.SQUARE_KEY || value === CommonConstants.CUBE_KEY) {
       return '52vp';
@@ -513,7 +519,7 @@ struct HomePage {
       value === CommonConstants.SQUARE || value === CommonConstants.CUBE || value === CommonConstants.FACTORIAL ||
       value === CommonConstants.VARIABLE_X || value === CommonConstants.VARIABLE_Y ||
       value === CommonConstants.PI || value === CommonConstants.E ||
-      value === CommonConstants.EQUATION_EQUAL || value === CommonConstants.DRAW;
+      value === CommonConstants.EQUATION_EQUAL || value === CommonConstants.DRAW || this.isTrigFunction(value);
   }
 
   isBinaryOperator(value: string): boolean {
@@ -527,9 +533,17 @@ struct HomePage {
       value === CommonConstants.FACTORIAL;
   }
 
+  isPrefixOperator(value: string): boolean {
+    return value === CommonConstants.SQRT || this.isTrigFunction(value);
+  }
+
+  isTrigFunction(value: string): boolean {
+    return value === CommonConstants.SIN || value === CommonConstants.COS || value === CommonConstants.TAN;
+  }
+
   isValueEnd(value: string): boolean {
     return !CheckEmptyUtil.isEmpty(value) && !this.isBinaryOperator(value) &&
-      value !== CommonConstants.SQRT && value !== CommonConstants.LEFT_PARENTHESIS &&
+      !this.isPrefixOperator(value) && value !== CommonConstants.LEFT_PARENTHESIS &&
       value !== CommonConstants.EQUATION_EQUAL;
   }
 
@@ -591,7 +605,10 @@ struct HomePage {
           })
           break;
       case CommonConstants.SQRT:
-        this.inputSqrt(len);
+      case CommonConstants.SIN:
+      case CommonConstants.COS:
+      case CommonConstants.TAN:
+        this.inputPrefixOperator(len, value);
         break;
       case CommonConstants.LEFT_PARENTHESIS:
         this.inputLeftParenthesis(len);
@@ -656,11 +673,12 @@ struct HomePage {
       return;
     }
     if ((last === CommonConstants.MIN) && (len === 1 || secondLast === CommonConstants.LEFT_PARENTHESIS ||
-      secondLast === CommonConstants.SQRT || (secondLast !== undefined && this.isBinaryOperator(secondLast)))) {
+      (secondLast !== undefined && this.isPrefixOperator(secondLast)) ||
+      (secondLast !== undefined && this.isBinaryOperator(secondLast)))) {
       this.expressions[len - 1] += value;
     } else if (!last) {
       this.expressions.push(value);
-    } else if (last === CommonConstants.SQRT || last === CommonConstants.LEFT_PARENTHESIS ||
+    } else if (this.isPrefixOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
       last === CommonConstants.EQUATION_EQUAL || this.isBinaryOperator(last)) {
       this.expressions.push(value);
     } else if (last === CommonConstants.RIGHT_PARENTHESIS || last === CommonConstants.VARIABLE_X ||
@@ -668,7 +686,7 @@ struct HomePage {
       this.expressions.push(CommonConstants.MUL);
       this.expressions.push(value);
     } else if (secondLast && (CalculateUtil.isSymbol(secondLast) ||
-      secondLast === CommonConstants.LEFT_PARENTHESIS || secondLast === CommonConstants.SQRT)) {
+      secondLast === CommonConstants.LEFT_PARENTHESIS || this.isPrefixOperator(secondLast))) {
       this.expressions[len -1] += value;
     } else {
       this.expressions[len - 1] += value;
@@ -691,7 +709,7 @@ struct HomePage {
     if (!last && value === CommonConstants.PERCENT_SIGN) {
       return false;
     }
-    if ((last === CommonConstants.MIN || last === CommonConstants.SQRT ||
+    if ((last === CommonConstants.MIN || this.isPrefixOperator(last) ||
       last === CommonConstants.LEFT_PARENTHESIS || last === CommonConstants.EQUATION_EQUAL ||
       this.isBinaryOperator(last)) &&
       (value === CommonConstants.PERCENT_SIGN)) {
@@ -726,7 +744,7 @@ struct HomePage {
     }
     let last = this.expressions[len - 1];
     let lastLen = last.length;
-    if (lastLen === 1) {
+    if (lastLen === 1 || this.isTrigFunction(last)) {
       this.expressions.pop();
       len = this.expressions.length;
     } else {
@@ -753,7 +771,7 @@ struct HomePage {
   inputOperators(len: number, value: string) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     let secondLast = len > 1 ? this.expressions[len - CommonConstants.TWO] : undefined;
-    if ((!last || last === CommonConstants.LEFT_PARENTHESIS || last === CommonConstants.SQRT ||
+    if ((!last || last === CommonConstants.LEFT_PARENTHESIS || this.isPrefixOperator(last) ||
       last === CommonConstants.EQUATION_EQUAL) && (value === Symbol.MIN)) {
       this.expressions.push(this.getSymbol(value));
       return;
@@ -769,7 +787,7 @@ struct HomePage {
       this.expressions.push(this.getSymbol(value));
       return;
     }
-    if ((value === Symbol.MIN) && last !== CommonConstants.SQRT &&
+    if ((value === Symbol.MIN) && !this.isPrefixOperator(last) &&
       (last === CommonConstants.MIN || last === CommonConstants.ADD)) {
       this.expressions.pop();
       this.expressions.push(this.getSymbol(value));
@@ -788,25 +806,25 @@ struct HomePage {
   }
 
   /**
-   * Triggered when input is square root.
+   * Triggered when input is prefix operators such as square root and trigonometric functions.
    *
    * @param len Expression Length.
    */
-  inputSqrt(len: number) {
+  inputPrefixOperator(len: number, value: string) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
-      last === CommonConstants.SQRT) {
-      this.expressions.push(CommonConstants.SQRT);
+      this.isPrefixOperator(last) || last === CommonConstants.EQUATION_EQUAL) {
+      this.expressions.push(value);
       return;
     }
     this.expressions.push(CommonConstants.MUL);
-    this.expressions.push(CommonConstants.SQRT);
+    this.expressions.push(value);
   }
 
   inputVariable(len: number) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
-      last === CommonConstants.SQRT || last === CommonConstants.EQUATION_EQUAL) {
+      this.isPrefixOperator(last) || last === CommonConstants.EQUATION_EQUAL) {
       this.expressions.push(CommonConstants.VARIABLE_X);
       return;
     }
@@ -817,7 +835,7 @@ struct HomePage {
   inputSimpleToken(len: number, value: string) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
-      last === CommonConstants.SQRT || last === CommonConstants.EQUATION_EQUAL) {
+      this.isPrefixOperator(last) || last === CommonConstants.EQUATION_EQUAL) {
       this.expressions.push(value);
       return;
     }
@@ -828,7 +846,7 @@ struct HomePage {
   inputPowerShortcut(len: number, powerSymbol: string) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
-      last === CommonConstants.SQRT || last === CommonConstants.EQUATION_EQUAL) {
+      this.isPrefixOperator(last) || last === CommonConstants.EQUATION_EQUAL) {
       this.expressions.push(CommonConstants.VARIABLE_X);
       this.expressions.push(powerSymbol);
       return;
@@ -841,7 +859,7 @@ struct HomePage {
   inputPowerOperator(len: number) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     if (!last || last === CommonConstants.EQUATION_EQUAL || last === CommonConstants.LEFT_PARENTHESIS ||
-      last === CommonConstants.SQRT || (last !== undefined && this.isBinaryOperator(last) &&
+      this.isPrefixOperator(last) || (last !== undefined && this.isBinaryOperator(last) &&
       last !== CommonConstants.POWER)) {
       this.expressions.push(CommonConstants.VARIABLE_X);
       this.expressions.push(CommonConstants.POWER);
@@ -867,7 +885,7 @@ struct HomePage {
   inputLeftParenthesis(len: number) {
     let last = len > 0 ? this.expressions[len - 1] : undefined;
     if (!last || this.isBinaryOperator(last) || last === CommonConstants.LEFT_PARENTHESIS ||
-      last === CommonConstants.SQRT) {
+      this.isPrefixOperator(last)) {
       this.expressions.push(CommonConstants.LEFT_PARENTHESIS);
       return;
     }

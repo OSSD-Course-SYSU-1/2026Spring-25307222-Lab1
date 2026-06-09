@@ -13,7 +13,7 @@
 右侧下方：坐标系和函数曲线
 ```
 
-原始 `README.md` 保持不变；已有的 `README2.md` 继续记录根号、括号、平方、立方、阶乘等科学计算功能。
+当前文档记录工程的完整功能，包括科学计算、函数绘图、多端适配和应用自由流转。
 
 ## 新增能力
 
@@ -92,6 +92,9 @@ y = x² + 1
 π
 e
 x^x
+sin
+cos
+tan
 ```
 
 输入阶段支持隐式乘法：
@@ -100,6 +103,7 @@ x^x
 2x        等价于 2 × x
 x(2 + x)  等价于 x × (2 + x)
 2√x       等价于 2 × √x
+2sinx     等价于 2 × sin(x)
 ```
 
 ### 3. 新增“绘图”按钮
@@ -157,6 +161,9 @@ x
 x²
 x³
 x^x
+sinx
+cosx
+tanx
 y = 4
 x = 3
 ```
@@ -197,11 +204,14 @@ y ∈ [-10, 10]
 | 平方 | `x²`、`(x + 1)²` |
 | 立方 | `x³` |
 | 幂运算 | `x^x`、`e^x`、`6^x`、`2^6` |
+| 三角函数 | `sinx`、`cosx`、`tanx`、`sin(π÷2)` |
 | 常数 | `π`、`e`、`4` |
 | 显式等式 | `y = x² + 1`、`x = 3`、`x = 9y` |
-| 混合表达式 | `√(x² + 1)`、`x² + 2x + 1` |
+| 混合表达式 | `√(x² + 1)`、`sin(x²)`、`x² + 2x + 1` |
 
 阶乘 `!` 仍然保留，但它更适合普通数值计算；在连续函数绘图中通常不建议作为主要图像函数使用。
+
+三角函数使用弧度制，例如 `sin(π÷2)=1`，绘制 `sinx` 时对应标准函数 `y=sin(x)`。
 
 ## 使用示例
 
@@ -327,6 +337,26 @@ e^x
 
 如果在空表达式或 `y=` 后直接点击 `x^x`，则会快捷输入 `x^x`。
 
+### 示例 11：计算和绘制三角函数
+
+普通计算：
+
+```text
+sin(π÷2)
+```
+
+点击 `=` 后，结果为 `1`。
+
+函数绘图：
+
+```text
+sinx
+cosx
+tanx
+```
+
+点击 `绘图` 后，会分别绘制 `y=sin(x)`、`y=cos(x)`、`y=tan(x)`。其中 `tan(x)` 在渐近线附近会自动跳过超出当前坐标范围的点，避免整条图像计算失败。
+
 ## 主要修改文件
 
 ### `entry/src/main/module.json5`
@@ -376,13 +406,16 @@ mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
 - `VARIABLE_Y`
 - `PI`
 - `POWER`
+- `SIN`
+- `COS`
+- `TAN`
 - `SQUARE_KEY`
 - `CUBE_KEY`
 - `X_POWER_X`
 - `EQUATION_EQUAL`
 - `DRAW`
 
-用于表示变量、常数、幂运算、快捷作图按键、等式符号和绘图命令。
+用于表示变量、常数、幂运算、三角函数、快捷作图按键、等式符号和绘图命令。
 
 ### `entry/src/main/ets/common/util/CalculateUtil.ets`
 
@@ -396,7 +429,7 @@ parseExpression(expressions: Array<string>, variableX?: number, variableY?: numb
 
 此外，表达式中的 `π` 和 `e` 会被转换为 `Math.PI` 和 `Math.E` 参与计算。
 
-本次还补充了二元幂运算 `^`，因此 `x^x` 会在采样时按 `Math.pow(x, x)` 计算，`e^x`、`6^x`、`2^6` 等表达式也可以正常计算。
+本次还补充了二元幂运算 `^` 和三角函数 `sin`、`cos`、`tan`。因此 `x^x` 会在采样时按 `Math.pow(x, x)` 计算，`e^x`、`6^x`、`2^6` 等表达式也可以正常计算；`sinx`、`cosx`、`tanx` 会按弧度制调用 `Math.sin`、`Math.cos`、`Math.tan`。
 
 例如：
 
@@ -421,6 +454,7 @@ x = 2
 - 修正 `=` 后直接输入 `x` 会被误补乘号的问题，使 `y=x³` 可以直接绘图。
 - 新增 `inputPowerShortcut`，处理 `x²`、`x³` 快捷按键。
 - 新增 `inputPowerOperator`，处理 `x^x` 幂运算按键；空表达式时快捷输入 `x^x`，已有底数时追加 `^`。
+- 新增 `inputPrefixOperator`，统一处理 `√`、`sin`、`cos`、`tan` 这类前缀函数。
 - 新增 `inputSimpleToken`，处理 `y`、`π`、`e` 等简单 token。
 - 新增 `inputEquationEqual`，处理表达式中的 `=`。
 - 新增 `drawGraph`，负责把当前表达式加入图像列表。
@@ -453,10 +487,11 @@ for (let pixelX = 0; pixelX <= this.graphWidth; pixelX++) {
 
 ### `entry/src/main/ets/viewmodel/PresskeysViewModel.ets`
 
-新增 `x`、`y`、`π`、`e`、`x^x`、等式输入和 `绘图` 按键，并把平方、立方按键显示为 `x²`、`x³`：
+新增 `x`、`y`、`π`、`e`、`sin`、`cos`、`tan`、`x^x`、等式输入和 `绘图` 按键，并把平方、立方按键显示为 `x²`、`x³`：
 
 ```ts
 new PressKeysBean(1, '24vp', '43vp', CommonConstants.VARIABLE_X)
+new PressKeysBean(1, '34vp', '43vp', CommonConstants.SIN)
 new PressKeysBean(1, '48vp', '43vp', CommonConstants.DRAW)
 ```
 
@@ -468,7 +503,7 @@ new PressKeysBean(1, '48vp', '43vp', CommonConstants.DRAW)
 
 函数绘图的关键是“表达式重复求值”：
 
-1. 用户输入表达式，可以是 `x²`、`y=x²`、`x=3`、`x=9y` 或 `4`。
+1. 用户输入表达式，可以是 `x²`、`sinx`、`y=x²`、`x=3`、`x=9y` 或 `4`。
 2. 点击 `绘图`。
 3. 程序把当前表达式保存到 `graphItems`，并分配一种曲线颜色。
 4. 程序先绘制坐标轴和网格。
@@ -479,12 +514,12 @@ new PressKeysBean(1, '48vp', '43vp', CommonConstants.DRAW)
 9. 把有效点连接成曲线。
 10. 对隐式方程，程序会同时采样 `x` 和 `y`，寻找左右两侧差值接近 0 或发生符号变化的位置。
 
-如果某个点计算结果非法，例如 `√x` 在 `x < 0` 时无实数结果，程序会跳过该点，避免整条曲线报错。
+如果某个点计算结果非法，例如 `√x` 在 `x < 0` 时无实数结果，或 `tanx` 在渐近线附近超出当前坐标范围，程序会跳过该点，避免整条曲线报错。
 
 ## 当前限制
 
 - 初始绘图范围为 `x [-10, 10]`、`y [-10, 10]`，支持通过鼠标滚轮缩放和拖动平移。
-- 暂不支持 `sin`、`cos`、`tan`、`log`、`ln` 等函数。
+- 已支持 `sin`、`cos`、`tan` 三角函数，暂不支持 `log`、`ln` 等函数。
 - 等式绘图目前重点支持 `y=f(x)`、`f(x)=y`、`x=a`、`a=x`，并支持基础隐式方程采样。
 - 阶乘适合离散整数计算，不适合作为连续函数绘图的主要表达式。
 - 多条图像使用固定调色板循环分配颜色，当图像数量很多时颜色会重复。
@@ -493,7 +528,7 @@ new PressKeysBean(1, '48vp', '43vp', CommonConstants.DRAW)
 
 - 增加坐标范围输入。
 - 支持触控手势缩放。
-- 支持三角函数和对数函数。
+- 支持 `log`、`ln` 等更多函数。
 - 增加函数表达式历史记录。
-- 增加图像删除、重命名和自定义颜色功能。
+- 增加图像重命名和自定义颜色功能。
 - 进一步增加竖屏手机布局和更细粒度断点，使同一套代码在手机竖屏、折叠屏、平板和 PC 窗口模式下切换不同布局。

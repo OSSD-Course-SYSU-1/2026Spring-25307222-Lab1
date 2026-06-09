@@ -37,7 +37,8 @@ class CalculateUtil {
   }
 
   isPrefixSymbol(value: string): boolean {
-    return value === CommonConstants.SQRT;
+    return value === CommonConstants.SQRT || value === CommonConstants.SIN ||
+      value === CommonConstants.COS || value === CommonConstants.TAN;
   }
 
   isPostfixSymbol(value: string): boolean {
@@ -75,6 +76,9 @@ class CalculateUtil {
         break;
       case SymbolicEnumeration.POWER:
       case SymbolicEnumeration.SQRT:
+      case SymbolicEnumeration.SIN:
+      case SymbolicEnumeration.COS:
+      case SymbolicEnumeration.TAN:
       case SymbolicEnumeration.SQUARE:
       case SymbolicEnumeration.CUBE:
       case SymbolicEnumeration.FACTORIAL:
@@ -287,6 +291,12 @@ class CalculateUtil {
     switch (symbol) {
       case SymbolicEnumeration.SQRT:
         return this.sqrt(arg);
+      case SymbolicEnumeration.SIN:
+        return this.trigonometric(arg, CommonConstants.SIN);
+      case SymbolicEnumeration.COS:
+        return this.trigonometric(arg, CommonConstants.COS);
+      case SymbolicEnumeration.TAN:
+        return this.trigonometric(arg, CommonConstants.TAN);
       case SymbolicEnumeration.SQUARE:
         return this.power(arg, CommonConstants.TWO);
       case SymbolicEnumeration.CUBE:
@@ -320,6 +330,34 @@ class CalculateUtil {
       return 'NaN';
     }
     return this.numberToScientificNotation(Math.pow(Number(arg), exponent));
+  }
+
+  trigonometric(arg: string, functionName: string): string {
+    if (CheckEmptyUtil.isEmpty(arg)) {
+      return 'NaN';
+    }
+    let value = Number(arg);
+    if (Number.isNaN(value)) {
+      return 'NaN';
+    }
+    let result = 0;
+    switch (functionName) {
+      case CommonConstants.SIN:
+        result = Math.sin(value);
+        break;
+      case CommonConstants.COS:
+        result = Math.cos(value);
+        break;
+      case CommonConstants.TAN:
+        result = Math.tan(value);
+        break;
+      default:
+        return 'NaN';
+    }
+    if (Math.abs(result) < 1e-12) {
+      result = 0;
+    }
+    return this.numberToScientificNotation(result);
   }
 
   factorial(arg: string): string {
